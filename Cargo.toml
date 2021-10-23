@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "cherry",
+    "cherry-derive",
+    "example"
+]
