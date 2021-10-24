@@ -1,18 +1,17 @@
-// use std::collections::HashMap;
-// use cherry::Config;
-//
-// fn load_config() -> Result<Config, anyhow::Error> {
-//     let a = toml::from_str::<Config>(include_str!("../config.toml"));
-//
-//     todo!()
-// }
+use cherry::MySqlTemplate;
 
+pub struct Primary;
+pub struct Secondary;
 
-// struct DataSource;
-//
-// static KEY: &'static str = "";
-//
-// fn test() {
-//     let map: HashMap<String, usize> = HashMap::new();
-//     map.get(KEY);
-// }
+impl MySqlTemplate for Primary {
+    fn key() -> &'static str {
+        // Datasource key, match db.toml file [mysql.xxx], xxx is the key value.
+        "datasource1"
+    }
+}
+
+impl MySqlTemplate for Secondary {
+    fn key() -> &'static str {
+        "datasource2"
+    }
+}

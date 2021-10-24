@@ -1,6 +1,0 @@
-[mysql.douban]
-url = "url1"
-connect_timeout = 12
-
-[mysql.movie]
-url = "url2"

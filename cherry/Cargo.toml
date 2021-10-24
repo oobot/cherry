@@ -5,7 +5,7 @@ authors = ["bugslabx <bugslabx@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bugslabx/cherry"
-keywords = ["orm", "sqlx", "database", "async", "postgres", "mysql", "sqlite"]
+keywords = ["orm", "database", "postgres", "mysql", "sqlite"]
 description = "Simple orm base on sqlx, support mysql, postgres, sqlite and mssql."
 
 [lib]
