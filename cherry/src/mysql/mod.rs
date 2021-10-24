@@ -7,7 +7,6 @@ use crate::{Arguments, Cherry, MySqlArguments, pools, WrapArguments, WrapRows};
 
 pub mod template;
 
-
 fn bulk_sql<T>(size: usize) -> SqlBuilder where T: Cherry {
     let columns = T::columns();
     let holders = vec!["?"; columns.len()];

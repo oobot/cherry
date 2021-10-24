@@ -11,6 +11,7 @@ pub use mysql::template::MySqlTemplate;
 pub use rows::WrapRows;
 pub use arguments::{Arguments, WrapArguments, MySqlArguments, PgArguments,
                     SqliteArguments, MssqlArguments};
+pub mod config;
 pub mod pools;
 
 pub(crate) mod arguments;
