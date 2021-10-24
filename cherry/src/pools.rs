@@ -1,34 +1,32 @@
 use std::collections::BTreeMap;
-use std::time::Duration;
 
 use anyhow::Error;
 use once_cell::sync::OnceCell;
-use sqlx::{AnyPool, Database, MssqlPool, MySqlPool, PgPool, Pool, SqlitePool};
-use sqlx::pool::PoolOptions;
+use sqlx::{Any, Database, Mssql, MySql, Pool, Postgres, Sqlite};
 
-use crate::config::Config;
+use crate::config::{Config, PoolConfig};
 
 static POOLS: OnceCell<DBPools> = OnceCell::new();
 
 pub async fn setup_pools(config: Config) -> Result<(), Error> {
     let mut pool = DBPools::default();
-    for (k, c) in config.mysql {
-        pool.mysql_pool.insert(k, c.to_pool().await?);
-    }
-    for (k, c) in config.postgres {
-        pool.pg_pool.insert(k, c.to_pool().await?);
-    }
-    for (k, c) in config.mssql {
-        pool.mssql_pool.insert(k, c.to_pool().await?);
-    }
-    for (k, c) in config.sqlite {
-        pool.sqlite_pool.insert(k, c.to_pool().await?);
-    }
-    for (k, c) in config.any {
-        pool.any_pool.insert(k, c.to_pool().await?);
-    }
-
+    set_pool::<MySql>(config.mysql, &mut pool.mysql_pool).await?;
+    set_pool::<Postgres>(config.postgres, &mut pool.pg_pool).await?;
+    set_pool::<Sqlite>(config.sqlite, &mut pool.sqlite_pool).await?;
+    set_pool::<Mssql>(config.mssql, &mut pool.mssql_pool).await?;
+    set_pool::<Any>(config.any, &mut pool.any_pool).await?;
     Ok(POOLS.set(pool).map_err(|_| anyhow!("Failed to set pools."))?)
+}
+
+async fn set_pool<DB: Database>(src: Option<BTreeMap<String, PoolConfig>>,
+                                target: &mut BTreeMap<String, Pool<DB>>)
+    -> Result<(), Error> {
+    if let Some(values) = src {
+        for (k, v) in values {
+            target.insert(k, v.to_pool().await?);
+        }
+    }
+    Ok(())
 }
 
 pub(crate) fn get() -> &'static DBPools {
@@ -37,9 +35,9 @@ pub(crate) fn get() -> &'static DBPools {
 
 #[derive(Debug, Default)]
 pub(crate) struct DBPools {
-    pub mysql_pool: BTreeMap<String, MySqlPool>,
-    pub pg_pool: BTreeMap<String, PgPool>,
-    pub mssql_pool: BTreeMap<String, MssqlPool>,
-    pub sqlite_pool: BTreeMap<String, SqlitePool>,
-    pub any_pool: BTreeMap<String, AnyPool>,
+    pub mysql_pool: BTreeMap<String, Pool<MySql>>,
+    pub pg_pool: BTreeMap<String, Pool<Postgres>>,
+    pub mssql_pool: BTreeMap<String, Pool<Mssql>>,
+    pub sqlite_pool: BTreeMap<String, Pool<Sqlite>>,
+    pub any_pool: BTreeMap<String, Pool<Any>>,
 }

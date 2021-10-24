@@ -6,6 +6,7 @@ use sqlx::{MySql, Transaction};
 use crate::{WrapRows, MySqlArguments};
 use crate::Cherry;
 use crate::mysql;
+use crate::mysql::pool;
 
 #[async_trait]
 pub trait MySqlTemplate {
@@ -138,6 +139,10 @@ pub trait MySqlTemplate {
         where S: AsRef<str> + Sync + Send {
         let x = mysql::execute(Self::key(), sql, args, tx).await?;
         Ok(x.rows_affected())
+    }
+
+    async fn begin<'a>(&self) -> Result<Transaction<'a, MySql>, Error> {
+        Ok(pool(Self::key())?.begin().await?)
     }
 
     fn key() -> &'static str {

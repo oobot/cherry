@@ -4,16 +4,16 @@ use std::time::Duration;
 use sqlx::{Database, Pool};
 use sqlx::pool::PoolOptions;
 
-#[derive(Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct Config {
-    pub mysql: BTreeMap<String, PoolConfig>,
-    pub postgres: BTreeMap<String, PoolConfig>,
-    pub mssql: BTreeMap<String, PoolConfig>,
-    pub sqlite: BTreeMap<String, PoolConfig>,
-    pub any: BTreeMap<String, PoolConfig>,
+    pub mysql: Option<BTreeMap<String, PoolConfig>>,
+    pub postgres: Option<BTreeMap<String, PoolConfig>>,
+    pub mssql: Option<BTreeMap<String, PoolConfig>>,
+    pub sqlite: Option<BTreeMap<String, PoolConfig>>,
+    pub any: Option<BTreeMap<String, PoolConfig>>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct PoolConfig {
     pub url: String,
     // after_connect: None,

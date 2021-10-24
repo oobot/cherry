@@ -12,6 +12,7 @@ pub enum WrapArguments<'a> {
     AnyArguments(AnyArguments<'a>),
 }
 
+#[allow(dead_code)]
 impl<'a> WrapArguments<'a> {
     pub(crate) fn unwrap_mysql(self) -> Result<MySqlArguments<'a>, anyhow::Error> {
         match self {
@@ -45,8 +46,6 @@ impl<'a> WrapArguments<'a> {
     }
 
 }
-
-//*************************************************************************
 
 pub trait Arguments<'q>: Send {
     type Database: Database;

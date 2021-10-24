@@ -5,8 +5,8 @@ authors = ["bugslabx <bugslabx@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bugslabx/cherry"
-keywords = ["orm", "database", "async", "postgres", "mysql", "sqlite"]
-description = "A simple orm tool for mysql, postgres, sqlite and mssql"
+keywords = ["orm", "sqlx", "database", "async", "postgres", "mysql", "sqlite"]
+description = "Simple orm base on sqlx, support mysql, postgres, sqlite and mssql."
 
 [lib]
 name = "cherry_derive"
