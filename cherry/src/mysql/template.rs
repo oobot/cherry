@@ -140,5 +140,7 @@ pub trait MySqlTemplate {
         Ok(x.rows_affected())
     }
 
-    fn key() -> &'static str;
+    fn key() -> &'static str {
+        "default"
+    }
 }
