@@ -1,26 +1,27 @@
 use std::collections::BTreeMap;
 
-use anyhow::Error;
 use once_cell::sync::OnceCell;
 use sqlx::{Any, Database, Mssql, MySql, Pool, Postgres, Sqlite};
 
+use crate::{cherry, Result};
 use crate::config::{Config, PoolConfig};
 
 static POOLS: OnceCell<DBPools> = OnceCell::new();
 
-pub async fn setup_pools(config: Config) -> Result<(), Error> {
+pub async fn setup_pools(config: Config) -> Result<()> {
     let mut pool = DBPools::default();
     set_pool::<MySql>(config.mysql, &mut pool.mysql_pool).await?;
     set_pool::<Postgres>(config.postgres, &mut pool.pg_pool).await?;
     set_pool::<Sqlite>(config.sqlite, &mut pool.sqlite_pool).await?;
     set_pool::<Mssql>(config.mssql, &mut pool.mssql_pool).await?;
     set_pool::<Any>(config.any, &mut pool.any_pool).await?;
-    Ok(POOLS.set(pool).map_err(|_| anyhow!("Failed to set pools."))?)
+
+    Ok(POOLS.set(pool).map_err(|_| cherry!("Failed to set pools."))?)
 }
 
 async fn set_pool<DB: Database>(src: Option<BTreeMap<String, PoolConfig>>,
                                 target: &mut BTreeMap<String, Pool<DB>>)
-    -> Result<(), Error> {
+    -> Result<()> {
     if let Some(values) = src {
         for (k, v) in values {
             target.insert(k, v.to_pool().await?);

@@ -1,9 +1,8 @@
-use anyhow::Error;
 use sql_builder::SqlBuilder;
 use sqlx::{MySql, MySqlPool, Transaction};
 use sqlx::mysql::MySqlQueryResult;
 
-use crate::{Arguments, Cherry, MySqlArguments, pools, WrapArguments, WrapRows};
+use crate::{Arguments, cherry, Cherry, MySqlArguments, pools, Result, WrapArguments, WrapRows};
 
 pub mod template;
 
@@ -18,7 +17,7 @@ fn bulk_sql<T>(size: usize) -> SqlBuilder where T: Cherry {
     sql
 }
 
-fn set_arguments<T>(values: &[T]) -> Result<MySqlArguments, Error> where T: Cherry {
+fn set_arguments<T>(values: &[T]) -> Result<MySqlArguments> where T: Cherry {
     let mut arg = WrapArguments::MySqlArguments(MySqlArguments::new());
     values.iter().for_each(|t| { t.arguments(&mut arg); } );
     arg.unwrap_mysql()
@@ -26,7 +25,7 @@ fn set_arguments<T>(values: &[T]) -> Result<MySqlArguments, Error> where T: Cher
 
 async fn execute<'a, S>(key: &str, sql: S, arguments: MySqlArguments<'a>,
                         tx: Option<&mut Transaction<'a, MySql>>)
-                        -> Result<MySqlQueryResult, Error> where S: AsRef<str> {
+                        -> Result<MySqlQueryResult> where S: AsRef<str> {
     let x = match tx {
         Some(tx) => {
             sqlx::query_with(sql.as_ref(), arguments.inner).execute(tx).await?
@@ -44,7 +43,7 @@ async fn execute<'a, S>(key: &str, sql: S, arguments: MySqlArguments<'a>,
 }
 
 async fn fetch<S: AsRef<str>, T>(key: &str, sql: S, arguments: MySqlArguments<'_>)
-                                 -> Result<Vec<T>, Error> where T: Cherry + Sync {
+                                 -> Result<Vec<T>> where T: Cherry + Sync {
     let output = sqlx::query_with(sql.as_ref(), arguments.inner)
         .fetch_all(pool(key)?)
         .await?;
@@ -55,6 +54,6 @@ async fn fetch<S: AsRef<str>, T>(key: &str, sql: S, arguments: MySqlArguments<'_
     Ok(vec)
 }
 
-fn pool(key: &str) -> Result<&MySqlPool, Error> {
-    pools::get().mysql_pool.get(key).ok_or(anyhow!("No pool for key: {}", key))
+fn pool(key: &str) -> Result<&MySqlPool> {
+    pools::get().mysql_pool.get(key).ok_or(cherry!("No pool for key: {}", key))
 }

@@ -66,7 +66,7 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
                 }
             }
 
-            fn from_row(rows: &cherry::WrapRows) -> Result<Self, anyhow::Error> {
+            fn from_row(rows: &cherry::WrapRows) -> Result<Self, cherry::CherryError> {
                 let x = Self {
                     [from_row_str]
                 };

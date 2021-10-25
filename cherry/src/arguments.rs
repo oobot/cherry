@@ -2,6 +2,8 @@ use sqlx::{Any, Arguments as SqlxArguments, Database, Mssql, MySql, Postgres, Sq
 use sqlx::database::HasArguments;
 use sqlx::encode::Encode;
 
+use crate::{cherry, Result};
+
 static ERR_MSG: &str = "Database arguments type mismatch.";
 
 pub enum WrapArguments<'a> {
@@ -14,34 +16,35 @@ pub enum WrapArguments<'a> {
 
 #[allow(dead_code)]
 impl<'a> WrapArguments<'a> {
-    pub(crate) fn unwrap_mysql(self) -> Result<MySqlArguments<'a>, anyhow::Error> {
+    pub(crate) fn unwrap_mysql(self) -> Result<MySqlArguments<'a>> {
         match self {
             WrapArguments::MySqlArguments(a) => Ok(a),
-            _ => Err(anyhow!(ERR_MSG))
+            _ => Err(cherry!(ERR_MSG))
+            // _ => Err(anyhow!(ERR_MSG))
         }
     }
-    pub(crate) fn unwrap_postgres(self) -> Result<PgArguments<'a>, anyhow::Error> {
+    pub(crate) fn unwrap_postgres(self) -> Result<PgArguments<'a>> {
         match self {
             WrapArguments::PgArguments(a) => Ok(a),
-            _ => Err(anyhow!(ERR_MSG))
+            _ => Err(cherry!(ERR_MSG))
         }
     }
-    pub(crate) fn unwrap_sqlite(self) -> Result<SqliteArguments<'a>, anyhow::Error> {
+    pub(crate) fn unwrap_sqlite(self) -> Result<SqliteArguments<'a>> {
         match self {
             WrapArguments::SqliteArguments(a) => Ok(a),
-            _ => Err(anyhow!(ERR_MSG))
+            _ => Err(cherry!(ERR_MSG))
         }
     }
-    pub(crate) fn unwrap_mssql(self) -> Result<MssqlArguments<'a>, anyhow::Error> {
+    pub(crate) fn unwrap_mssql(self) -> Result<MssqlArguments<'a>> {
         match self {
             WrapArguments::MssqlArguments(a) => Ok(a),
-            _ => Err(anyhow!(ERR_MSG))
+            _ => Err(cherry!(ERR_MSG))
         }
     }
-    pub(crate) fn unwrap_any(self) -> Result<AnyArguments<'a>, anyhow::Error> {
+    pub(crate) fn unwrap_any(self) -> Result<AnyArguments<'a>> {
         match self {
             WrapArguments::AnyArguments(a) => Ok(a),
-            _ => Err(anyhow!(ERR_MSG))
+            _ => Err(cherry!(ERR_MSG))
         }
     }
 

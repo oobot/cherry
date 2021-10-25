@@ -1,17 +1,13 @@
-use anyhow::Error;
 use async_trait::async_trait;
 use sql_builder::SqlBuilder;
 use sqlx::{MySql, Transaction};
 
-use crate::{WrapRows, MySqlArguments};
-use crate::Cherry;
-use crate::mysql;
-use crate::mysql::pool;
+use crate::{cherry, Cherry, mysql, MySqlArguments, Result, WrapRows};
 
 #[async_trait]
 pub trait MySqlTemplate {
 
-    async fn insert<T>(&self, t: &T) -> Result<u64, Error> where T: Cherry + Sync + Send {
+    async fn insert<T>(&self, t: &T) -> Result<u64> where T: Cherry + Sync + Send {
         let sql = mysql::bulk_sql::<T>(1).sql()?;
         let arguments = t.to_arguments().unwrap_mysql()?.inner;
         let x = sqlx::query_with(sql.as_str(), arguments)
@@ -21,7 +17,7 @@ pub trait MySqlTemplate {
     }
 
     async fn insert_multi<'a, T>(&self, v: &'a [T], tx: Option<&mut Transaction<'a, MySql>>)
-        -> Result<u64, Error>
+        -> Result<u64>
         where T: Cherry + Sync {
         assert!(v.len() > 0);
         let sql = mysql::bulk_sql::<T>(v.len()).sql()?;
@@ -31,7 +27,7 @@ pub trait MySqlTemplate {
     }
 
     async fn insert_replace<'a, T>(&self, v: &'a [T], tx: Option<&mut Transaction<'a, MySql>>)
-                           -> Result<u64, Error>
+                           -> Result<u64>
         where T: Cherry + Sync {
         assert!(v.len() > 0);
         let sql = mysql::bulk_sql::<T>(v.len()).sql()?
@@ -42,7 +38,7 @@ pub trait MySqlTemplate {
     }
 
     async fn insert_ignore<'a, T>(&self, v: &'a [T], tx: Option<&mut Transaction<'a, MySql>>)
-        -> Result<u64, Error>
+        -> Result<u64>
         where T: Cherry + Sync {
         assert!(v.len() > 0);
         let sql = mysql::bulk_sql::<T>(v.len()).sql()?
@@ -54,17 +50,17 @@ pub trait MySqlTemplate {
 
     async fn insert_update<'a, T>(
         &self, v: &'a [T], fields: &[&str], tx: Option<&mut Transaction<'a, MySql>>)
-        -> Result<u64, Error>
+        -> Result<u64>
         where T: Cherry + Sync {
         assert!(v.len() > 0 && fields.len() > 0);
 
         let insert = mysql::bulk_sql::<T>(v.len()).sql()?
-            .strip_suffix(";").ok_or(anyhow!("Bad sql"))?
+            .strip_suffix(";").ok_or(cherry!("Bad sql"))?
             .to_owned();
 
         let update = fields.iter().map(|x| format!("{0} = new.{0}, ", x))
             .collect::<String>()
-            .strip_suffix(",").ok_or(anyhow!("Bad sql"))?
+            .strip_suffix(",").ok_or(cherry!("Bad sql"))?
             .to_owned();
 
         let sql = format!("{} AS new ON DUPLICATE KEY UPDATE {};", insert, update);
@@ -75,7 +71,7 @@ pub trait MySqlTemplate {
     }
 
     async fn select<'a, T>(&self, eq_field: &str, args: MySqlArguments<'a>)
-                           -> Result<Option<T>, Error>
+                           -> Result<Option<T>>
         where T: Cherry + Sync {
         assert!(args.count > 0);
         let sql = SqlBuilder::select_from(T::table())
@@ -94,7 +90,7 @@ pub trait MySqlTemplate {
     }
 
     async fn select_in<'a, T>(&self, in_field: &str, args: MySqlArguments<'a>)
-                              -> Result<Vec<T>, Error>
+                              -> Result<Vec<T>>
         where T: Cherry + Sync {
         assert!(args.count > 0);
         let sql = SqlBuilder::select_from(T::table())
@@ -104,14 +100,14 @@ pub trait MySqlTemplate {
     }
 
     async fn select_list<'a, T>(&self, sql: &str, args: MySqlArguments<'a>)
-                                -> Result<Vec<T>, Error>
+                                -> Result<Vec<T>>
         where T: Cherry + Sync {
         mysql::fetch(Self::key(), sql, args).await
     }
 
     async fn update<'a, T>(&self, set_fields: &[&str], eq_fields: &[&str], args: MySqlArguments<'a>,
                            tx: Option<&mut Transaction<'a, MySql>>)
-        -> Result<u64, Error>
+        -> Result<u64>
         where T: Cherry + Sync {
         let mut sql = SqlBuilder::update_table(T::table());
         set_fields.iter().for_each(|f| { sql.set(f, "?"); });
@@ -124,7 +120,7 @@ pub trait MySqlTemplate {
 
     async fn delete<'a, T>(&self, eq_fields: &[&str], args: MySqlArguments<'a>,
                            tx: Option<&mut Transaction<'a, MySql>>)
-                           -> Result<u64, Error>
+                           -> Result<u64>
         where T: Cherry + Sync {
         let mut sql = SqlBuilder::delete_from(T::table());
         eq_fields.iter().for_each(|f| { sql.and_where_eq(f, "?"); });
@@ -135,14 +131,14 @@ pub trait MySqlTemplate {
 
     async fn execute<'a, S>(&self, sql: S, args: MySqlArguments<'a>,
                            tx: Option<&mut Transaction<'a, MySql>>)
-                           -> Result<u64, Error>
+                           -> Result<u64>
         where S: AsRef<str> + Sync + Send {
         let x = mysql::execute(Self::key(), sql, args, tx).await?;
         Ok(x.rows_affected())
     }
 
-    async fn begin<'a>(&self) -> Result<Transaction<'a, MySql>, Error> {
-        Ok(pool(Self::key())?.begin().await?)
+    async fn begin<'a>(&self) -> Result<Transaction<'a, MySql>> {
+        Ok(mysql::pool(Self::key())?.begin().await?)
     }
 
     fn key() -> &'static str {

@@ -1,8 +1,11 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
+use serde::Deserialize;
 use sqlx::{Database, Pool};
 use sqlx::pool::PoolOptions;
+
+use crate::Result;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Config {
@@ -29,7 +32,7 @@ pub struct PoolConfig {
 }
 
 impl PoolConfig {
-    pub(crate) async fn to_pool<DB: Database>(&self) -> Result<Pool<DB>, anyhow::Error> {
+    pub(crate) async fn to_pool<DB: Database>(&self) -> Result<Pool<DB>> {
         let mut opts = PoolOptions::<DB>::new();
         if let Some(v) = self.test_before_acquire {
             opts = opts.test_before_acquire(v);
