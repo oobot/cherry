@@ -2,15 +2,21 @@ use async_trait::async_trait;
 use sql_builder::SqlBuilder;
 use sqlx::{MySql, Transaction};
 
-use crate::{cherry, Cherry, mysql, MySqlArguments, Result, WrapRows};
+use crate::{Arguments, cherry, Cherry, mysql, MySqlArguments, Result, WrapArguments};
+use crate::row::Row;
 
 #[async_trait]
 pub trait MySqlTemplate {
 
     async fn insert<T>(&self, t: &T) -> Result<u64> where T: Cherry + Sync + Send {
         let sql = mysql::bulk_sql::<T>(1).sql()?;
-        let arguments = t.to_arguments().unwrap_mysql()?.inner;
-        let x = sqlx::query_with(sql.as_str(), arguments)
+        let mut arguments = WrapArguments::MySqlArguments(Arguments::new());
+        t.arguments(&mut arguments);
+        let arguments = match arguments {
+            WrapArguments::MySqlArguments(a) => a,
+            _ => panic!("Unwrap mysql arguments panic. This should not be occurrence.")
+        };
+        let x = sqlx::query_with(sql.as_str(), arguments.inner)
             .execute(mysql::pool(Self::key())?)
             .await?;
         Ok(x.rows_affected())
@@ -21,7 +27,7 @@ pub trait MySqlTemplate {
         where T: Cherry + Sync {
         assert!(v.len() > 0);
         let sql = mysql::bulk_sql::<T>(v.len()).sql()?;
-        let arguments = mysql::set_arguments(v)?;
+        let arguments = mysql::set_arguments(v);
         let x = mysql::execute(Self::key(), sql, arguments, tx).await?;
         Ok(x.rows_affected())
     }
@@ -32,7 +38,7 @@ pub trait MySqlTemplate {
         assert!(v.len() > 0);
         let sql = mysql::bulk_sql::<T>(v.len()).sql()?
             .replacen("INSERT INTO", "REPLACE INTO", 1);
-        let arguments = mysql::set_arguments(v)?;
+        let arguments = mysql::set_arguments(v);
         let x = mysql::execute(Self::key(), sql, arguments, tx).await?;
         Ok(x.rows_affected())
     }
@@ -43,7 +49,7 @@ pub trait MySqlTemplate {
         assert!(v.len() > 0);
         let sql = mysql::bulk_sql::<T>(v.len()).sql()?
             .replace("INSERT", "INSERT IGNORE");
-        let arguments = mysql::set_arguments(v)?;
+        let arguments = mysql::set_arguments(v);
         let x = mysql::execute(Self::key(), sql, arguments, tx).await?;
         Ok(x.rows_affected())
     }
@@ -65,7 +71,7 @@ pub trait MySqlTemplate {
 
         let sql = format!("{} AS new ON DUPLICATE KEY UPDATE {};", insert, update);
 
-        let arguments = mysql::set_arguments(v)?;
+        let arguments = mysql::set_arguments(v);
         let x = mysql::execute(Self::key(), sql, arguments, tx).await?;
         Ok(x.rows_affected())
     }
@@ -84,7 +90,7 @@ pub trait MySqlTemplate {
             .await?;
 
         match x {
-            Some(row) => Ok(Some(T::from_row(&WrapRows::MySqlRow(row))?)),
+            Some(row) => Ok(Some(T::from_row(&Row::MySqlRow(row))?)),
             _ => Ok(None)
         }
     }

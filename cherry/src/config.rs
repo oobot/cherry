@@ -11,9 +11,8 @@ use crate::Result;
 pub struct Config {
     pub mysql: Option<BTreeMap<String, PoolConfig>>,
     pub postgres: Option<BTreeMap<String, PoolConfig>>,
-    pub mssql: Option<BTreeMap<String, PoolConfig>>,
     pub sqlite: Option<BTreeMap<String, PoolConfig>>,
-    pub any: Option<BTreeMap<String, PoolConfig>>,
+    pub mssql: Option<BTreeMap<String, PoolConfig>>,
 }
 
 #[derive(Debug, Default, Deserialize)]

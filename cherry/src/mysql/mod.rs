@@ -2,9 +2,21 @@ use sql_builder::SqlBuilder;
 use sqlx::{MySql, MySqlPool, Transaction};
 use sqlx::mysql::MySqlQueryResult;
 
-use crate::{Arguments, cherry, Cherry, MySqlArguments, pools, Result, WrapArguments, WrapRows};
+use crate::{Arguments, cherry, Cherry, MySqlArguments, pools, Result, WrapArguments};
+use crate::row::Row;
 
 pub mod template;
+
+fn set_arguments<T>(values: &[T]) -> MySqlArguments where T: Cherry {
+    let mut arg = WrapArguments::MySqlArguments(Arguments::new());
+    values.iter().for_each(|t| {
+        t.arguments(&mut arg);
+    });
+    match arg {
+        WrapArguments::MySqlArguments(a) => a,
+        _ => panic!("Unwrap mysql arguments panic. This should not be occurrence.")
+    }
+}
 
 fn bulk_sql<T>(size: usize) -> SqlBuilder where T: Cherry {
     let columns = T::columns();
@@ -15,12 +27,6 @@ fn bulk_sql<T>(size: usize) -> SqlBuilder where T: Cherry {
         sql.values(holders.as_slice());
     });
     sql
-}
-
-fn set_arguments<T>(values: &[T]) -> Result<MySqlArguments> where T: Cherry {
-    let mut arg = WrapArguments::MySqlArguments(MySqlArguments::new());
-    values.iter().for_each(|t| { t.arguments(&mut arg); } );
-    arg.unwrap_mysql()
 }
 
 async fn execute<'a, S>(key: &str, sql: S, arguments: MySqlArguments<'a>,
@@ -49,7 +55,7 @@ async fn fetch<S: AsRef<str>, T>(key: &str, sql: S, arguments: MySqlArguments<'_
         .await?;
     let mut vec = Vec::with_capacity(output.len());
     for row in output {
-        vec.push(T::from_row(&WrapRows::MySqlRow(row))?);
+        vec.push(T::from_row(&Row::MySqlRow(row))?);
     }
     Ok(vec)
 }

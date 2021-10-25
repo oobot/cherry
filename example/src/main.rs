@@ -1,3 +1,5 @@
+#![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code)]
+
 #[macro_use]
 extern crate cherry_derive;
 

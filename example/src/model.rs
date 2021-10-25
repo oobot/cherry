@@ -1,6 +1,6 @@
 #[derive(Cherry)]
-#[cherry(mysql, table = "my_user")]
+#[cherry(table = "my_user")]
 pub struct User {
-    pub id: u32,
+    pub id: i32,
     pub name: String,
 }

@@ -14,7 +14,6 @@ pub async fn setup_pools(config: Config) -> Result<()> {
     set_pool::<Postgres>(config.postgres, &mut pool.pg_pool).await?;
     set_pool::<Sqlite>(config.sqlite, &mut pool.sqlite_pool).await?;
     set_pool::<Mssql>(config.mssql, &mut pool.mssql_pool).await?;
-    set_pool::<Any>(config.any, &mut pool.any_pool).await?;
 
     Ok(POOLS.set(pool).map_err(|_| cherry!("Failed to set pools."))?)
 }

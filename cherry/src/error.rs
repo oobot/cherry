@@ -1,5 +1,5 @@
 #[derive(Debug, thiserror::Error)]
-pub enum CherryError {
+pub enum Error {
     #[error("{0}")]
     Sqlx(#[from] sqlx::Error),
     #[error("{0}")]
@@ -8,9 +8,9 @@ pub enum CherryError {
     Other(String),
 }
 
-impl CherryError {
-    pub(crate) fn from<S: Into<String>>(s: S) -> Self {
-        CherryError::Other(s.into())
+impl Error {
+    pub fn from<S: Into<String>>(s: S) -> Self {
+        Error::Other(s.into())
     }
 }
 
@@ -18,12 +18,12 @@ impl CherryError {
 #[macro_export]
 macro_rules! cherry_err {
     ($msg:literal $(,)?) => {
-        crate::error::CherryError::from($msg)
+        crate::error::Error::from($msg)
     };
     ($err:expr $(,)?) => ({
-        crate::error::CherryError::from($err)
+        crate::error::Error::from($err)
     });
     ($fmt:expr, $($arg:tt)*) => {
-        crate::error::CherryError::from(format!($fmt, $($arg)*))
+        crate::error::Error::from(format!($fmt, $($arg)*))
     };
 }
