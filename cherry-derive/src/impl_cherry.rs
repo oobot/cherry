@@ -28,11 +28,13 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
     ).collect::<String>();
 
     let from_row_str = fields_vec.iter().map(|s|
-        format!(r#"{0}: cherry::row::try_get(r, "{0}")?, "#, s)
+        format!(r#"{0}: row.decode("{0}")?, "#, s)
     ).collect::<String>();
 
     let token = quote!(
         impl cherry::Cherry for #ident {
+            type Database = cherry::mysql::MySql; // todo the other database.
+
             fn table() -> &'static str {
                 #table
             }
@@ -40,25 +42,12 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
                 vec![ [fields_str] ]
             }
 
-            fn arguments<'a>(&'a self, arguments: &mut cherry::WrapArguments<'a>) {
-                use cherry::{Arguments, WrapArguments::*};
-                match arguments {
-                    MySqlArguments(a) => { a [add_arguments_str] ; },
-                    PgArguments(a) => { a [add_arguments_str] ; },
-                    SqliteArguments(a) => { a [add_arguments_str] ; },
-                    MssqlArguments(a) => { a [add_arguments_str] ; },
-                }
+            fn arguments<'a>(&'a self, arguments: &mut cherry::Arguments<'a, Self::Database>) {
+                arguments [add_arguments_str] ;
             }
 
-            fn from_row(row: &cherry::row::Row) -> Result<Self, cherry::Error> {
-                use cherry::row::Row;
-                let v = match row {
-                    Row::MySqlRow(r) => Self { [from_row_str] },
-                    Row::PgRow(r) => Self { [from_row_str] },
-                    Row::SqliteRow(r) => Self { [from_row_str] },
-                    Row::MssqlRow(r) => Self { [from_row_str] },
-                };
-                Ok(v)
+            fn from_row(row: &cherry::Row<Self::Database>) -> Result<Self, cherry::error::Error> {
+                Ok( Self { [from_row_str] } )
             }
         }
     );

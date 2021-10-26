@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 
+use anyhow::anyhow;
 use once_cell::sync::OnceCell;
-use sqlx::{Any, Database, Mssql, MySql, Pool, Postgres, Sqlite};
+use sqlx::{Database, Mssql, MySql, Pool, Postgres, Sqlite};
 
-use crate::{cherry, Result};
+use crate::Result;
 use crate::config::{Config, PoolConfig};
 
 static POOLS: OnceCell<DBPools> = OnceCell::new();
@@ -15,7 +16,7 @@ pub async fn setup_pools(config: Config) -> Result<()> {
     set_pool::<Sqlite>(config.sqlite, &mut pool.sqlite_pool).await?;
     set_pool::<Mssql>(config.mssql, &mut pool.mssql_pool).await?;
 
-    Ok(POOLS.set(pool).map_err(|_| cherry!("Failed to set pools."))?)
+    Ok(POOLS.set(pool).map_err(|_| anyhow!("Failed to set pools."))?)
 }
 
 async fn set_pool<DB: Database>(src: Option<BTreeMap<String, PoolConfig>>,
@@ -39,5 +40,4 @@ pub(crate) struct DBPools {
     pub pg_pool: BTreeMap<String, Pool<Postgres>>,
     pub mssql_pool: BTreeMap<String, Pool<Mssql>>,
     pub sqlite_pool: BTreeMap<String, Pool<Sqlite>>,
-    pub any_pool: BTreeMap<String, Pool<Any>>,
 }

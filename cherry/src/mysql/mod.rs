@@ -2,10 +2,12 @@ use sql_builder::SqlBuilder;
 use sqlx::{MySql, MySqlPool, Transaction};
 use sqlx::mysql::MySqlQueryResult;
 
-use crate::{Arguments, cherry, Cherry, MySqlArguments, pools, Result, WrapArguments};
+use crate::{Arguments, cherry, Cherry, pools, Result, WrapArguments};
+use crate::mysql::arguments::MySqlArguments;
 use crate::row::Row;
 
-pub mod template;
+// pub mod template;
+pub mod arguments;
 
 fn set_arguments<T>(values: &[T]) -> MySqlArguments where T: Cherry {
     let mut arg = WrapArguments::MySqlArguments(Arguments::new());
@@ -14,7 +16,7 @@ fn set_arguments<T>(values: &[T]) -> MySqlArguments where T: Cherry {
     });
     match arg {
         WrapArguments::MySqlArguments(a) => a,
-        _ => panic!("Unwrap mysql arguments panic. This should not be occurrence.")
+        // _ => panic!("Unwrap mysql arguments panic. This should not be occurrence.")
     }
 }
 
