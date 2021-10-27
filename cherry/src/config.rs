@@ -1,36 +1,28 @@
-use std::collections::BTreeMap;
 use std::time::Duration;
 
-use serde::Deserialize;
 use sqlx::{Database, Pool};
 use sqlx::pool::PoolOptions;
 
 use crate::Result;
 
-#[derive(Debug, Default, Deserialize)]
-pub struct Config {
-    pub mysql: Option<BTreeMap<String, PoolConfig>>,
-    pub postgres: Option<BTreeMap<String, PoolConfig>>,
-    pub sqlite: Option<BTreeMap<String, PoolConfig>>,
-    pub mssql: Option<BTreeMap<String, PoolConfig>>,
-}
-
-#[derive(Debug, Default, Deserialize)]
+#[cfg_attr(feature = "json", derive(serde::Deserialize))]
+#[derive(Debug, Default)]
 pub struct PoolConfig {
     pub url: String,
-    // after_connect: None,
-    // before_acquire: None,
-    // after_release: None,
-    // fair: Option<bool>,
     pub test_before_acquire: Option<bool>,
     pub max_connections: Option<u32>,
     pub min_connections: Option<u32>,
     pub connect_timeout: Option<u64>,
     pub max_lifetime: Option<u64>,
     pub idle_timeout: Option<u64>,
+    // after_connect: None,
+    // before_acquire: None,
+    // after_release: None,
+    // fair: Option<bool>,
 }
 
 impl PoolConfig {
+    #[allow(dead_code)]
     pub(crate) async fn to_pool<DB: Database>(&self) -> Result<Pool<DB>> {
         let mut opts = PoolOptions::<DB>::new();
         if let Some(v) = self.test_before_acquire {

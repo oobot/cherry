@@ -6,11 +6,17 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bugslabx/cherry"
 keywords = ["orm", "database", "postgres", "mysql", "sqlite"]
-description = "Simple orm base on sqlx, support mysql, postgres, sqlite and mssql."
+description = "Simple orm based on sqlx, support mysql, postgres, sqlite and mssql."
 
 [lib]
 name = "cherry_derive"
 proc-macro = true
+
+[features]
+mysql = []
+postgres = []
+sqlite = []
+mssql = []
 
 [dependencies]
 proc-macro2 = "1.0.26"

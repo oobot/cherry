@@ -4,20 +4,31 @@ use std::str::FromStr;
 use heck::SnakeCase;
 use proc_macro2::Span;
 use quote::quote;
-use syn::{Ident, Lit, Meta, NestedMeta, punctuated::Punctuated};
+use syn::{Data, Ident, Lit, Meta, NestedMeta, punctuated::Punctuated};
 
 pub fn derive(ast: syn::DeriveInput) -> TokenStream {
-    let table = parse_attrs(&ast);
-    let ident = ast.ident;
-
-    let fields = match ast.data {
-        syn::Data::Struct(ref s) => &s.fields,
+    let fields = match &ast.data {
+        Data::Struct(ref s) => &s.fields,
         _ => panic!("Cherry only impl for struct."),
     };
+    let ident = &ast.ident;
+    let table = parse_attrs(&ast);
 
     let fields_vec = fields.iter().filter_map(|field|
         field.ident.as_ref().map(|ident| ident.to_string())
     ).collect::<Vec<String>>();
+
+    let db_type_str = if cfg!(feature = "mysql") {
+        "cherry::mysql::MySql"
+    } else if cfg!(feature = "postgres") {
+        "cherry::postgres::Postgres"
+    } else if cfg!(feature = "sqlite") {
+        "cherry::sqlite::Sqlite"
+    } else if cfg!(feature = "mssql") {
+        "cherry::mssql::Mssql"
+    } else {
+        "unknown"
+    };
 
     let fields_str = fields_vec.iter().map(|s|
         format!(r#" "{}", "#, s)
@@ -33,8 +44,7 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
 
     let token = quote!(
         impl cherry::Cherry for #ident {
-            type Database = cherry::mysql::MySql; // todo the other database.
-
+            type Database = [db_type_str];
             fn table() -> &'static str {
                 #table
             }
@@ -53,11 +63,10 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
     );
 
     let token = token.to_string()
+        .replace("[db_type_str]", db_type_str)
         .replace("[fields_str]", fields_str.as_str())
         .replace("[from_row_str]", from_row_str.as_str())
         .replace("[add_arguments_str]", add_arguments_str.as_str());
-
-    // println!("{}", token);
 
     TokenStream::from_str(token.as_str()).expect("Parse token stream failed")
 }

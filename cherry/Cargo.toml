@@ -6,31 +6,58 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bugslabx/cherry"
 keywords = ["orm", "database", "postgres", "mysql", "sqlite"]
-description = "Simple orm base on sqlx, support mysql, postgres, sqlite and mssql."
+description = "Simple orm based on sqlx, support mysql, postgres, sqlite and mssql."
 
 [lib]
 name = "cherry"
 
-#[features]
-#default = ["sqlx/default"]
-#mysql = ["sqlx/mysql"]
-#postgres = ["sqlx/postgres"]
-#sqlite = ["sqlx/sqlite"]
-#mssql = ["sqlx/mssql"]
+[features]
+default = ["sqlx/default", "runtime-async-std-rustls"]
+mysql = ["sqlx/mysql"]
+postgres = ["sqlx/postgres"]
+sqlite = ["sqlx/sqlite"]
+mssql = ["sqlx/mssql"]
 
+uuid = ["sqlx/uuid"]
+json = ["sqlx/json", "serde", "serde_derive"]
+time = ["sqlx/time"]
+chrono = ["sqlx/chrono"]
 
+macros = ["sqlx/sqlx-macros"]
+bit-vec = ["sqlx/bit-vec"]
+decimal = ["sqlx/decimal"]
+bigdecimal = ["sqlx/bigdecimal"]
+bstr = ["sqlx/bstr"]
+git2 = ["sqlx/git2"]
+ipnetwork = ["sqlx/ipnetwork"]
+mac_address = ["sqlx/mac_address"]
+migrate = ["sqlx/migrate"]
+offline = ["sqlx/offline"]
+tls = ["sqlx/tls"]
+
+runtime-actix = ["sqlx/runtime-actix"]
+runtime-actix-native-tls = ["sqlx/runtime-actix-native-tls"]
+runtime-actix-rustls = ["sqlx/runtime-actix-rustls"]
+runtime-async-std = ["sqlx/runtime-async-std"]
+runtime-async-std-native-tls = ["sqlx/runtime-async-std-native-tls"]
+runtime-async-std-rustls = ["sqlx/runtime-async-std-rustls"]
+runtime-tokio = ["sqlx/runtime-tokio"]
+runtime-tokio-native-tls = ["sqlx/runtime-tokio-native-tls"]
+runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]
+
+#all = ["sqlx/all"]
+#all-types = ["sqlx/all-types"]
+#all-databases = ["sqlx/all-databases"]
+#any = ["sqlx/any"]
 
 [dependencies]
 anyhow = "1.0.38"
-thiserror = "1.0.30"
-async-trait = "0.1.48"
+#async-trait = "0.1.48"
 once_cell = "1.7.0"
 
-serde = "1.0.123"
-serde_derive = "1.0.123"
+serde = { version = "1.0.123", optional = true }
+serde_derive = { version = "1.0.123", optional = true }
 sql-builder = "3.1.1"
-sqlx = { version = "0.5.9", features = [ "runtime-async-std-rustls", "macros", "chrono", "json", "mysql", "mssql", "postgres", "sqlite" ]}
+sqlx = "0.5.9"
 
 [dev-dependencies]
-futures-await-test = "0.3.0"
-cherry-derive = {package = "cherry-derive", path = "../cherry-derive"}
