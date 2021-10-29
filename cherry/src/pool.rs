@@ -1,46 +1,82 @@
-// #[macro_export]
-macro_rules! gen_pool {
-    ($db: ty) => {
-        use std::any::{Any, TypeId};
-        use std::collections::BTreeMap;
+use std::any::TypeId;
+use std::collections::BTreeMap;
+use std::time::Duration;
 
-        use anyhow::anyhow;
-        use once_cell::sync::OnceCell;
-        use sqlx::Pool;
+use anyhow::anyhow;
+use once_cell::sync::OnceCell;
+use sqlx::pool::PoolOptions;
 
-        use crate::datasource::DataSource;
-        use crate::config::PoolConfig;
-        use crate::Result;
+use crate::Result;
 
-        static POOLS: OnceCell<BTreeMap<TypeId, Pool<$db>>> = OnceCell::new();
+static POOLS: OnceCell<BTreeMap<TypeId, Pool>> = OnceCell::new();
 
-        // #[allow(dead_code)]
-        // pub(crate) fn get<T: 'static>() -> Result<&'static Pool<$db>> {
-        //     let type_id = TypeId::of::<T>();
-        //     let value = POOLS.get()
-        //         .ok_or_else(|| anyhow!("Pools is empty."))?
-        //         .get(&type_id)
-        //         .ok_or_else(|| anyhow!("No pool found for key: {:?}", type_id))?;
-        //     Ok(value)
-        // }
+pub async fn set(config: BTreeMap<TypeId, PoolConfig>) -> Result<()> {
+    let mut pools = BTreeMap::new();
+    for (key, v) in config {
+        pools.insert(key, v.to_pool().await?);
+    }
 
-        pub(crate) fn get(type_id: TypeId) -> Result<&'static Pool<$db>> {
-            let value = POOLS.get()
-                .ok_or_else(|| anyhow!("Pools is empty."))?
-                .get(&type_id)
-                .ok_or_else(|| anyhow!("No pool found for key: {:?}", type_id))?;
-            Ok(value)
+    POOLS.set(pools).map_err(|_| anyhow!("Failed to set pools."))?;
+    Ok(())
+}
+
+pub(crate) fn get(type_id: TypeId) -> Result<&'static Pool> {
+    let value = POOLS.get()
+        .ok_or_else(|| anyhow!("Pools is empty."))?
+        .get(&type_id)
+        .ok_or_else(|| anyhow!("No pool found for key: {:?}", type_id))?;
+    Ok(value)
+}
+
+
+#[cfg_attr(feature = "json", derive(serde::Deserialize))]
+#[derive(Debug, Default)]
+pub struct PoolConfig {
+    pub url: String,
+    pub test_before_acquire: Option<bool>,
+    pub max_connections: Option<u32>,
+    pub min_connections: Option<u32>,
+    pub connect_timeout: Option<u64>,
+    pub max_lifetime: Option<u64>,
+    pub idle_timeout: Option<u64>,
+    // after_connect: None,
+    // before_acquire: None,
+    // after_release: None,
+    // fair: Option<bool>,
+}
+
+impl PoolConfig {
+
+    pub(crate) async fn to_pool(&self) -> Result<Pool> {
+        let mut opts = PoolOptions::new();
+        if let Some(v) = self.test_before_acquire {
+            opts = opts.test_before_acquire(v);
+        }
+        if let Some(v) = self.max_connections {
+            opts = opts.max_connections(v);
+        }
+        if let Some(v) = self.min_connections {
+            opts = opts.min_connections(v);
+        }
+        if let Some(v) = self.connect_timeout {
+            opts = opts.connect_timeout(Duration::from_secs(v));
+        }
+        if let Some(v) = self.max_lifetime {
+            opts = opts.max_lifetime(Duration::from_secs(v));
+        }
+        if let Some(v) = self.idle_timeout {
+            opts = opts.idle_timeout(Duration::from_secs(v));
         }
 
-        pub async fn set(config: BTreeMap<Box<dyn DataSource<Database=$db>>, PoolConfig>)
-            -> Result<()> {
-            let mut pools = BTreeMap::new();
-            for (k, v) in config {
-                pools.insert((&*k).type_id(), v.to_pool().await?);
-            }
+        Ok( Pool { inner: opts.connect(self.url.as_str()).await? } )
+    }
+}
 
-            POOLS.set(pools).map_err(|_| anyhow!("Failed to set pools."))?;
-            Ok(())
+
+macro_rules! gen_pool {
+    ($db: ty) => {
+        pub(crate) struct Pool {
+            pub(crate) inner: sqlx::Pool<$db>
         }
     }
 }

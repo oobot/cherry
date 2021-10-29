@@ -16,11 +16,11 @@ pub use {
     sql_builder::SqlBuilder as Sql,
 };
 
-pub mod config;
+// pub mod config;
 pub mod datasource;
 pub mod pool;
 pub mod insert;
-
+pub mod update;
 
 
 pub mod error {

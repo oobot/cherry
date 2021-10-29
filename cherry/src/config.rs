@@ -1,8 +1,8 @@
 use std::time::Duration;
 
-use sqlx::{Database, Pool};
 use sqlx::pool::PoolOptions;
 
+use crate::pool::Pool;
 use crate::Result;
 
 #[cfg_attr(feature = "json", derive(serde::Deserialize))]
@@ -22,9 +22,9 @@ pub struct PoolConfig {
 }
 
 impl PoolConfig {
-    #[allow(dead_code)]
-    pub(crate) async fn to_pool<DB: Database>(&self) -> Result<Pool<DB>> {
-        let mut opts = PoolOptions::<DB>::new();
+
+    pub(crate) async fn to_pool(&self) -> Result<Pool> {
+        let mut opts = PoolOptions::new();
         if let Some(v) = self.test_before_acquire {
             opts = opts.test_before_acquire(v);
         }
@@ -44,6 +44,6 @@ impl PoolConfig {
             opts = opts.idle_timeout(Duration::from_secs(v));
         }
 
-        Ok(opts.connect(self.url.as_str()).await?)
+        Ok( Pool { inner: opts.connect(self.url.as_str()).await? } )
     }
 }

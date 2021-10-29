@@ -53,7 +53,7 @@ impl<'a> Insert<'a> {
         t
     }
 
-    pub(crate) fn insert_or_ignore<T>(ds: TypeId, v: &'a [T]) -> Self where T: Cherry {
+    pub(crate) fn insert_ignore<T>(ds: TypeId, v: &'a [T]) -> Self where T: Cherry {
         let mut t = Self::new(ds);
         t.sql_builder = Some(Self::sql_builder::<T>(v.len()));
         t.replace = Some(("INSERT".into(), "INSERT IGNORE".into()));
@@ -61,7 +61,7 @@ impl<'a> Insert<'a> {
         t
     }
 
-    pub(crate) fn insert_or_replace<T>(ds: TypeId, v: &'a [T]) -> Self where T: Cherry {
+    pub(crate) fn insert_replace<T>(ds: TypeId, v: &'a [T]) -> Self where T: Cherry {
         let mut t = Self::new(ds);
         t.sql_builder = Some(Self::sql_builder::<T>(v.len()));
         t.replace = Some(("INSERT INTO".into(), "INSERT REPLACE INTO".into()));
@@ -114,12 +114,13 @@ impl<'a> Insert<'a> {
         let result = if let Some(tx) = self.tx { // Manual transaction.
             sqlx::query_with(sql, arguments).execute(&mut tx.inner).await?
         } else if self.tx_auto { // Auto transaction.
-            let mut tx = pool::get(self.ds)?.begin().await?;
+            let mut tx = pool::get(self.ds)?.inner.begin().await?;
             let result = sqlx::query_with(sql, arguments).execute(&mut tx).await?;
             tx.commit().await?;
             result
         } else { // No transaction.
-            sqlx::query_with(sql, arguments).execute(pool::get(self.ds)?).await?
+            let pool = &pool::get(self.ds)?.inner;
+            sqlx::query_with(sql, arguments).execute(pool).await?
         };
 
         Ok(QueryResult::from(result))
@@ -127,18 +128,18 @@ impl<'a> Insert<'a> {
 
 }
 
-pub struct InsertOrUpdate<'a> {
+pub struct InsertUpdate<'a> {
     insert: Insert<'a>,
     fields: Vec<String>,
 }
 
-impl<'a> InsertOrUpdate<'a> {
+impl<'a> InsertUpdate<'a> {
 
     fn new(ds: TypeId) -> Self {
         Self { insert: Insert::new(ds), fields: vec![] }
     }
 
-    pub(crate) fn insert_or_update<T>(ds: TypeId, v: &'a [T]) -> Self where T: Cherry {
+    pub(crate) fn insert_update<T>(ds: TypeId, v: &'a [T]) -> Self where T: Cherry {
         let mut t = Self::new(ds);
         t.insert.sql_builder = Some(Insert::sql_builder::<T>(v.len()));
         v.iter().for_each(|v| v.arguments(&mut t.insert.arguments) );
