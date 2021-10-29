@@ -18,55 +18,41 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
         field.ident.as_ref().map(|ident| ident.to_string())
     ).collect::<Vec<String>>();
 
-    let db_type_str = if cfg!(feature = "mysql") {
-        "cherry::mysql::MySql"
-    } else if cfg!(feature = "postgres") {
-        "cherry::postgres::Postgres"
-    } else if cfg!(feature = "sqlite") {
-        "cherry::sqlite::Sqlite"
-    } else if cfg!(feature = "mssql") {
-        "cherry::mssql::Mssql"
-    } else {
-        "unknown"
-    };
-
-    let fields_str = fields_vec.iter().map(|s|
+    let fields = fields_vec.iter().map(|s|
         format!(r#" "{}", "#, s)
     ).collect::<String>();
 
-    let add_arguments_str = fields_vec.iter().map(|s|
-        format!(r#".add(&self.{}) "#, s)
+    let arguments = fields_vec.iter().map(|s|
+        format!(r#" .add(&self.{}) "#, s)
     ).collect::<String>();
 
-    let from_row_str = fields_vec.iter().map(|s|
-        format!(r#"{0}: row.decode("{0}")?, "#, s)
+    let from_row = fields_vec.iter().map(|s|
+        format!(r#" {0}: row.try_get("{0}")?, "#, s)
     ).collect::<String>();
 
     let token = quote!(
         impl cherry::Cherry for #ident {
-            type Database = [db_type_str];
             fn table() -> &'static str {
                 #table
             }
             fn columns() -> Vec<&'static str> {
-                vec![ [fields_str] ]
+                vec![ [fields] ]
             }
 
-            fn arguments<'a>(&'a self, arguments: &mut cherry::Arguments<'a, Self::Database>) {
-                arguments [add_arguments_str] ;
+            fn arguments<'a>(&'a self, arguments: &mut cherry::Arguments<'a>) {
+                arguments [arguments] ;
             }
 
-            fn from_row(row: &cherry::Row<Self::Database>) -> Result<Self, cherry::error::Error> {
-                Ok( Self { [from_row_str] } )
+            fn from_row(row: &cherry::Row) -> Result<Self, cherry::error::Error> {
+                Ok( Self { [from_row] } )
             }
         }
     );
 
     let token = token.to_string()
-        .replace("[db_type_str]", db_type_str)
-        .replace("[fields_str]", fields_str.as_str())
-        .replace("[from_row_str]", from_row_str.as_str())
-        .replace("[add_arguments_str]", add_arguments_str.as_str());
+        .replace("[fields]", fields.as_str())
+        .replace("[arguments]", arguments.as_str())
+        .replace("[from_row]", from_row.as_str());
 
     TokenStream::from_str(token.as_str()).expect("Parse token stream failed")
 }
