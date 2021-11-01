@@ -1,5 +1,5 @@
-use crate::arguments::Arguments;
-use crate::row::Row;
+use crate::adapt::arguments::Arguments;
+use crate::adapt::row::Row;
 
 pub trait Cherry: Sized + Send + Unpin {
 

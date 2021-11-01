@@ -6,11 +6,12 @@ use anyhow::anyhow;
 use once_cell::sync::OnceCell;
 use sqlx::pool::PoolOptions;
 
+use crate::adapt::pool::Pool;
 use crate::Result;
 
 static POOLS: OnceCell<BTreeMap<TypeId, Pool>> = OnceCell::new();
 
-pub async fn set(config: BTreeMap<TypeId, PoolConfig>) -> Result<()> {
+pub async fn setup_pools(config: BTreeMap<TypeId, PoolConfig>) -> Result<()> {
     let mut pools = BTreeMap::new();
     for (key, v) in config {
         pools.insert(key, v.to_pool().await?);
@@ -71,21 +72,3 @@ impl PoolConfig {
         Ok( Pool { inner: opts.connect(self.url.as_str()).await? } )
     }
 }
-
-
-macro_rules! gen_pool {
-    ($db: ty) => {
-        pub(crate) struct Pool {
-            pub(crate) inner: sqlx::Pool<$db>
-        }
-    }
-}
-
-#[cfg(feature = "mysql")]
-gen_pool!(sqlx::MySql);
-#[cfg(feature = "postgres")]
-gen_pool!(sqlx::Postgres);
-#[cfg(feature = "sqlite")]
-gen_pool!(sqlx::Sqlite);
-#[cfg(feature = "mssql")]
-gen_pool!(sqlx::Mssql);
