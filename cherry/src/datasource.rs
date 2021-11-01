@@ -1,7 +1,8 @@
 use std::any::TypeId;
 
 use crate::Cherry;
-use crate::insert::{Insert, InsertUpdate};
+use crate::query::insert::Insert;
+use crate::query::insert_update::InsertUpdate;
 
 pub trait DataSource {
 

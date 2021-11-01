@@ -16,11 +16,8 @@ pub use {
 };
 
 pub mod connection;
-pub mod insert;
-pub mod update;
-pub mod delete;
 pub mod adapt;
-pub mod execute;
+pub mod query;
 
 
 pub mod error {
