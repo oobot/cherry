@@ -8,16 +8,17 @@ use crate::{Cherry, impl_tx, impl_where, Result};
 use crate::adapt::query_result::QueryResult;
 use crate::adapt::transaction::Transaction;
 use crate::query::{self, Data};
-use crate::query::enhance::query::Query;
+use crate::query::query_builder::QueryBuilder;
 
 pub struct Delete<'a> {
-    pub(crate) query: Query<'a>,
+    pub(crate) query: QueryBuilder<'a>,
 }
 
 impl<'a> Delete<'a> {
+
     pub(crate) fn new<T: Cherry>(datasource: TypeId) -> Self {
         Self {
-            query: Query::new::<T>(datasource, SqlBuilder::delete_from(T::table()))
+            query: QueryBuilder::new::<T>(datasource, SqlBuilder::delete_from(T::table()))
         }
     }
 

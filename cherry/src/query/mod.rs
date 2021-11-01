@@ -5,11 +5,13 @@ use crate::adapt::arguments::Arguments;
 use crate::adapt::query_result::QueryResult;
 use crate::adapt::transaction::Transaction;
 
-pub(crate) mod enhance;
 pub(crate) mod insert;
 pub(crate) mod insert_update;
 pub(crate) mod update;
 pub(crate) mod delete;
+pub(crate) mod select;
+pub(crate) mod query_builder;
+pub(crate) mod auto_impl;
 
 pub enum TxMode<'a> {
     Manual(&'a mut Transaction<'a>), Auto, None

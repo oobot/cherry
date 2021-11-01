@@ -7,10 +7,10 @@ use crate::{Cherry, impl_tx, Result};
 use crate::adapt::query_result::QueryResult;
 use crate::adapt::transaction::Transaction;
 use crate::query::{self, Data};
-use crate::query::enhance::query::Query;
+use crate::query::query_builder::QueryBuilder;
 
 pub struct InsertUpdate<'a> {
-    pub(crate) query: Query<'a>,
+    pub(crate) query: QueryBuilder<'a>,
     pub(crate) columns: Vec<&'static str>,
     pub(crate) size: usize,
     pub(crate) fields: Vec<String>,
@@ -20,7 +20,7 @@ impl<'a> InsertUpdate<'a> {
 
     fn new<T>(datasource: TypeId) -> Self where T: Cherry {
         Self {
-            query: Query::new::<T>(datasource, SqlBuilder::insert_into(T::table())),
+            query: QueryBuilder::new::<T>(datasource, SqlBuilder::insert_into(T::table())),
             columns: T::columns(),
             size: 0,
             fields: vec![]

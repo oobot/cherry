@@ -5,18 +5,29 @@ use crate::Result;
 
 macro_rules! gen_row {
     ($db: ty, $row: ty) => {
-        pub struct Row {
-            pub(crate) inner: $row
-        }
+        // pub struct Row {
+        //     pub(crate) inner: $row
+        // }
 
+        pub struct Row(pub $row);
         impl Row {
             pub fn try_get<'a, T, C>(&'a self, column: C) -> Result<T>
                 where T: Decode<'a, $db> + Type<$db>, C: ColumnIndex<$row> {
-                Ok(sqlx::Row::try_get(&self.inner, column)?)
+                Ok(sqlx::Row::try_get(&self.0, column)?)
             }
         }
     }
 }
+
+// pub struct Row(sqlx::mysql::MySqlRow);
+//
+// impl Row {
+//     pub fn try_get<'a, T, C>(&'a self, column: C) -> Result<T>
+//         where T: Decode<'a, $db> + Type<$db>, C: ColumnIndex<$row> {
+//     Ok(sqlx::Row::try_get(&self.0, column)?)
+//     }
+// }
+
 
 #[cfg(feature = "mysql")]
 gen_row!(sqlx::MySql, sqlx::mysql::MySqlRow);

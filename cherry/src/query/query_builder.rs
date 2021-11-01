@@ -9,14 +9,14 @@ use crate::adapt::arguments::Arguments;
 use crate::adapt::transaction::Transaction;
 use crate::query::TxMode;
 
-pub(crate) struct Query<'a> {
+pub(crate) struct QueryBuilder<'a> {
     pub(crate) datasource: TypeId,
     pub(crate) sql_builder: SqlBuilder,
     pub(crate) arguments: Arguments<'a>,
     pub(crate) tx: TxMode<'a>,
 }
 
-impl<'a> Query<'a> {
+impl<'a> QueryBuilder<'a> {
     
     pub(crate) fn new<T: Cherry>(datasource: TypeId, sql_builder: SqlBuilder) -> Self {
         Self { datasource, sql_builder, arguments: Arguments::new(), tx: TxMode::None, }
