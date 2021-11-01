@@ -2,28 +2,34 @@
 
 pub(crate) type Result<T> = std::result::Result<T, anyhow::Error>;
 pub(crate) mod cherry;
+pub(crate) mod adapt;
+pub(crate) mod query;
 pub(crate) mod datasource;
 
 // top-level
 pub use {
     cherry::Cherry,
-    adapt::arguments::Arguments,
-    adapt::row::Row,
     datasource::DataSource,
 
-    sqlx::{Database, Decode, Encode, Transaction},
+    adapt::row::Row,
+    adapt::arguments::Arguments,
+    adapt::query_result::QueryResult,
+    adapt::transaction::Transaction,
+
+    query::insert::Insert,
+    query::insert_update::InsertUpdate,
+    query::update::Update,
+    query::delete::Delete,
+    query::select::Select,
+
+    sqlx::{Database, Decode, Encode},
     sqlx::database::HasArguments,
 };
 
 pub mod connection;
-pub mod adapt;
-pub mod query;
-
-
 pub mod error {
     pub use anyhow::Error;
 }
-
 
 pub mod types {
     pub use sqlx::types::Type;
