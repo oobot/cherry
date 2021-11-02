@@ -4,11 +4,9 @@ use sql_builder::SqlBuilder;
 use sqlx::encode::Encode;
 use sqlx::types::Type;
 
-use crate::{Cherry, impl_tx, impl_where, Result};
-use crate::adapt::query_result::QueryResult;
-use crate::adapt::transaction::Transaction;
-use crate::query::{self, Data};
+use crate::{Cherry, connection, gen_execute, gen_where};
 use crate::query::query_builder::QueryBuilder;
+use crate::types::{Database, QueryResult, Result, Transaction};
 
 pub struct Delete<'a> {
     pub(crate) query: QueryBuilder<'a>,
@@ -22,25 +20,11 @@ impl<'a> Delete<'a> {
         }
     }
 
-    pub async fn execute(self) -> Result<QueryResult>  {
-        let data = Data {
-            datasource: self.query.datasource,
-            sql: self.query.sql_builder.sql()?,
-            arguments: self.query.arguments,
-            tx: self.query.tx
-        };
-        query::execute(data).await
+    fn build_sql(&mut self) -> Result<String> {
+        Ok(self.query.sql_builder.sql()?)
     }
 
-    impl_tx!();
-
-    #[cfg(feature = "mysql")]
-    impl_where!(sqlx::MySql);
-    #[cfg(feature = "postgres")]
-    impl_where!(sqlx::Postgres);
-    #[cfg(feature = "sqlite")]
-    impl_where!(sqlx::Sqlite);
-    #[cfg(feature = "mssql")]
-    impl_where!(sqlx::Mssql);
+    gen_where!();
+    gen_execute!();
 
 }

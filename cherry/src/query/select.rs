@@ -1,24 +1,24 @@
 use std::any::TypeId;
+use std::marker::PhantomData;
 
 use sql_builder::SqlBuilder;
 use sqlx::encode::Encode;
 use sqlx::types::Type;
 
-use crate::{Cherry, connection, impl_tx, impl_where, Result};
-use crate::adapt::query_result::QueryResult;
-use crate::adapt::row::Row;
-use crate::adapt::transaction::Transaction;
-use crate::query::{self, Data};
+use crate::{Cherry, connection, gen_where};
 use crate::query::query_builder::QueryBuilder;
+use crate::types::{Database, Result};
 
-pub struct Select<'a> {
+pub struct Select<'a, T> {
+    _keep: PhantomData<T>,
     pub(crate) query: QueryBuilder<'a>,
 }
 
-impl<'a> Select<'a> {
+impl<'a, T> Select<'a, T> where T: Cherry {
 
-    pub(crate) fn new<T: Cherry>(datasource: TypeId) -> Self {
+    pub(crate) fn new(datasource: TypeId) -> Self {
         Self {
+            _keep: PhantomData,
             query: QueryBuilder::new::<T>(datasource, SqlBuilder::select_from(T::table()))
         }
     }
@@ -53,36 +53,29 @@ impl<'a> Select<'a> {
         self
     }
 
-    pub async fn fetch<T>(self) -> Result<Option<T>> where T: Cherry {
+    gen_where!();
+
+    pub async fn fetch(self) -> Result<Option<T>> {
         let row = sqlx::query_with(
             self.query.sql_builder.sql()?.as_str(),
-            self.query.arguments.inner
-        ).fetch_optional(&connection::get(self.query.datasource)?.inner).await?;
+            self.query.arguments
+        ).fetch_optional(connection::get(self.query.datasource)?).await?;
         match row {
-            Some(row) => Ok(Some(T::from_row(&Row(row))?)),
+            Some(row) => Ok(Some(T::from_row(&row)?)),
             _ => Ok(None)
         }
     }
 
-    pub async fn fetch_all<T>(self) -> Result<Vec<T>> where T: Cherry {
+    pub async fn fetch_all(self) -> Result<Vec<T>> {
         let rows = sqlx::query_with(
             self.query.sql_builder.sql()?.as_str(),
-            self.query.arguments.inner
-        ).fetch_all(&connection::get(self.query.datasource)?.inner).await?;
+            self.query.arguments
+        ).fetch_all(connection::get(self.query.datasource)?).await?;
         let mut vec = Vec::with_capacity(rows.len());
         for row in rows {
-            vec.push(T::from_row(&Row(row))?);
+            vec.push(T::from_row(&row)?);
         }
         Ok(vec)
     }
-
-    #[cfg(feature = "mysql")]
-    impl_where!(sqlx::MySql);
-    #[cfg(feature = "postgres")]
-    impl_where!(sqlx::Postgres);
-    #[cfg(feature = "sqlite")]
-    impl_where!(sqlx::Sqlite);
-    #[cfg(feature = "mssql")]
-    impl_where!(sqlx::Mssql);
 
 }

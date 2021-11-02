@@ -1,13 +1,14 @@
 use std::any::Any;
 
 use async_trait::async_trait;
-use crate::adapt::transaction::Transaction;
-use crate::{Cherry, Result};
+
+use crate::{Cherry, connection};
 use crate::query::delete::Delete;
 use crate::query::insert::Insert;
 use crate::query::insert_update::InsertUpdate;
 use crate::query::select::Select;
 use crate::query::update::Update;
+use crate::types::{Result, Transaction};
 
 #[async_trait]
 pub trait DataSource {
@@ -41,12 +42,12 @@ pub trait DataSource {
         Update::new::<T>(self.type_id())
     }
 
-    fn select<'a, T>(&'static self) -> Select<'a> where T: Cherry + 'static {
-        Select::new::<T>(self.type_id())
+    fn select<'a, T>(&'static self) -> Select<'a, T> where T: Cherry + 'static {
+        Select::new(self.type_id())
     }
 
     async fn begin<'a>(&'static self) -> Result<Transaction<'a>>  {
-        Ok(Transaction::begin(self.type_id()).await?)
+        Ok(connection::get(self.type_id())?.begin().await?)
     }
 
 }

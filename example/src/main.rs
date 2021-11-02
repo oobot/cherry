@@ -1,37 +1,47 @@
-#![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code)]
+// #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code)]
 
 #[macro_use]
 extern crate cherry_derive;
 
-use std::error::Error;
+use std::any::{Any, TypeId};
+use std::collections::BTreeMap;
+use std::iter::FromIterator;
 
-use cherry::{Arguments, MySqlTemplate, pools};
-
-use crate::datasource::{Primary, Secondary};
-use crate::model::User;
-
-mod model;
-mod datasource;
+// use cherry::connection::{self, PoolConfig};
+// use cherry::DataSource;
 
 #[async_std::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let config = toml::from_str(include_str!("../db.toml"))?;
-    pools::setup_pools(config).await?;
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // connection::setup_pools(pool_config()).await?;
 
-    let jack = User { id: 100, name: "Jack".to_owned(), };
-    let lily = User { id: 101, name: "Lily".to_owned(), };
+    // Update::and_where();
 
-    let _eff_rows = Primary.insert(&jack).await?;
-
-    // let mut args = MySqlArguments::new();
-    // args.add(jack.id);
-    let _result = Primary.select::<User>("id", Arguments::from(jack.id)).await?;
-
-    let data = [jack, lily];
-    let mut tx = Secondary.begin().await?;
-    // If no transaction is specified, it is automatically enabled internally.
-    Secondary.insert_replace(&data, Some(&mut tx)).await?;
-    tx.commit().await?;
 
     todo!()
+}
+
+
+// fn pool_config() -> BTreeMap<TypeId, PoolConfig> {
+//     BTreeMap::from_iter([
+//         (Other.type_id(), PoolConfig {
+//             url: "mysql://root:12345678@localhost:3306/other".to_owned(),
+//             ..Default::default()
+//         }),
+//         (Another.type_id(), PoolConfig {
+//             url: "mysql://root:12345678@localhost:3306/another".to_owned(),
+//             ..Default::default()
+//         }),
+//     ])
+// }
+
+// struct Other;
+// struct Another;
+//
+// impl DataSource for Other {}
+// impl DataSource for Another {}
+
+#[derive(Cherry)]
+struct User {
+    id: u64,
+    name: String,
 }

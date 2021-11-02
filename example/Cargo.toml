@@ -9,5 +9,5 @@ edition = "2018"
 async-std = {version = "1.10.0", features = ["attributes"]}
 toml = "0.5.8"
 
-cherry = {package = "cherry", path = "../cherry"}
-cherry-derive = {package = "cherry-derive", path = "../cherry-derive"}
+cherry = {package = "cherry", path = "../cherry", features = ["mysql", "json"]}
+cherry-derive = {package = "cherry-derive", path = "../cherry-derive" }

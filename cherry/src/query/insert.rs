@@ -2,11 +2,9 @@ use std::any::TypeId;
 
 use sql_builder::SqlBuilder;
 
-use crate::{Cherry, impl_tx, Result};
-use crate::adapt::query_result::QueryResult;
-use crate::adapt::transaction::Transaction;
-use crate::query::{self, Data};
+use crate::{Cherry, connection, gen_execute};
 use crate::query::query_builder::QueryBuilder;
+use crate::types::{QueryResult, Result, Transaction};
 
 pub struct Insert<'a> {
     pub(crate) query: QueryBuilder<'a>,
@@ -18,8 +16,12 @@ pub struct Insert<'a> {
 impl<'a> Insert<'a> {
 
     pub(crate) fn new<T>(datasource: TypeId) -> Self where T: Cherry {
-        let query = QueryBuilder::new::<T>(datasource, SqlBuilder::insert_into(T::table()));
-        Self { query, columns: T::columns(), replace: None, size: 0 }
+        Self {
+            query: QueryBuilder::new::<T>(datasource, SqlBuilder::insert_into(T::table())),
+            columns: T::columns(),
+            replace: None,
+            size: 0,
+        }
     }
 
     pub(crate) fn insert<T>(datasource: TypeId, v: &'a T) -> Self where T: Cherry {
@@ -52,7 +54,7 @@ impl<'a> Insert<'a> {
         t
     }
 
-    pub async fn execute(mut self) -> Result<QueryResult>  {
+    fn build_sql(&mut self) -> Result<String> {
         let holders = vec!["?"; self.columns.len()];
         self.query.sql_builder.fields(self.columns.as_slice());
         (0..self.size).for_each(|_| {
@@ -62,15 +64,9 @@ impl<'a> Insert<'a> {
         if let Some((src, target)) = &self.replace {
             sql = sql.replacen(src.as_str(), target.as_str(), 1);
         }
-
-        let data = Data {
-            datasource: self.query.datasource,
-            sql,
-            arguments: self.query.arguments,
-            tx: self.query.tx
-        };
-        query::execute(data).await
+        Ok(sql)
     }
 
-    impl_tx!();
+    gen_execute!();
+
 }

@@ -6,8 +6,7 @@ use anyhow::anyhow;
 use once_cell::sync::OnceCell;
 use sqlx::pool::PoolOptions;
 
-use crate::adapt::pool::Pool;
-use crate::Result;
+use crate::types::{Pool, Result};
 
 static POOLS: OnceCell<BTreeMap<TypeId, Pool>> = OnceCell::new();
 
@@ -69,6 +68,6 @@ impl PoolConfig {
             opts = opts.idle_timeout(Duration::from_secs(v));
         }
 
-        Ok( Pool { inner: opts.connect(self.url.as_str()).await? } )
+        Ok( opts.connect(self.url.as_str()).await? )
     }
 }

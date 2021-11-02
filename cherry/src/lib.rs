@@ -1,37 +1,24 @@
-#![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
+// #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
 
-pub(crate) type Result<T> = std::result::Result<T, anyhow::Error>;
 pub(crate) mod cherry;
-pub(crate) mod adapt;
-pub(crate) mod query;
 pub(crate) mod datasource;
+pub(crate) mod query;
 
-// top-level
 pub use {
     cherry::Cherry,
     datasource::DataSource,
-
-    adapt::row::Row,
-    adapt::arguments::Arguments,
-    adapt::query_result::QueryResult,
-    adapt::transaction::Transaction,
-
-    query::insert::Insert,
-    query::insert_update::InsertUpdate,
-    query::update::Update,
-    query::delete::Delete,
-    query::select::Select,
-
-    sqlx::{Database, Decode, Encode},
-    sqlx::database::HasArguments,
 };
 
+pub mod types;
 pub mod connection;
+
 pub mod error {
     pub use anyhow::Error;
 }
 
-pub mod types {
+pub mod sqlx {
+    pub use sqlx::{Database, Decode, Encode, Arguments, Row};
+    pub use sqlx::database::HasArguments;
     pub use sqlx::types::Type;
     #[cfg(feature = "json")]
     pub use sqlx::types::Json;

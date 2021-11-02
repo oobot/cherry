@@ -2,12 +2,11 @@ use std::any::TypeId;
 
 use anyhow::anyhow;
 use sql_builder::SqlBuilder;
+use sqlx::{Encode, Type};
 
-use crate::{Cherry, impl_tx, Result};
-use crate::adapt::query_result::QueryResult;
-use crate::adapt::transaction::Transaction;
-use crate::query::{self, Data};
+use crate::{Cherry, connection, gen_execute, gen_where};
 use crate::query::query_builder::QueryBuilder;
+use crate::types::{Database, QueryResult, Result, Transaction};
 
 pub struct InsertUpdate<'a> {
     pub(crate) query: QueryBuilder<'a>,
@@ -56,7 +55,9 @@ impl<'a> InsertUpdate<'a> {
         self
     }
 
-    pub async fn execute(mut self) -> Result<QueryResult>  {
+    gen_where!();
+
+    fn build_sql(&mut self) -> Result<String> {
         if self.fields.is_empty() {
             return Err(anyhow!("Empty update fields."));
         }
@@ -75,17 +76,9 @@ impl<'a> InsertUpdate<'a> {
             .strip_suffix(",")
             .ok_or(anyhow!("Empty sql. This wasn’t supposed to happen."))?
             .to_owned();
-
-        let data = Data {
-            datasource: self.query.datasource,
-            sql: format!("{} AS new ON DUPLICATE KEY UPDATE {};", insert, update),
-            arguments: self.query.arguments,
-            tx: self.query.tx
-        };
-
-        query::execute(data).await
+        Ok(format!("{} AS new ON DUPLICATE KEY UPDATE {};", insert, update))
     }
 
-    impl_tx!();
+    gen_execute!();
 
 }

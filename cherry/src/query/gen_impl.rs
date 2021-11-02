@@ -1,35 +1,36 @@
 #[macro_export]
-macro_rules! impl_tx {
+macro_rules! gen_execute {
     () => {
-        pub fn tx(mut self, tx: &'a mut Transaction<'a>) -> Self {
-            self.query.tx(tx);
-            self
+        pub async fn execute(mut self) -> Result<QueryResult> {
+            let pool = connection::get(self.query.datasource)?;
+            let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
+                .execute(pool).await?;
+            Ok(result)
         }
 
-        pub fn tx_ref(&mut self, tx: &'a mut Transaction<'a>) -> &Self {
-            self.query.tx(tx);
-            self
+        pub async fn execute_tx(mut self) -> Result<QueryResult> {
+            let mut tx = connection::get(self.query.datasource)?.begin().await?;
+            let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
+                .execute(&mut tx).await?;
+            tx.commit().await?;
+            Ok(result)
         }
 
-        pub fn tx_auto(mut self) -> Self {
-            self.query.tx_auto();
-            self
+        pub async fn execute_with(mut self, tx: &mut Transaction<'a>) -> Result<QueryResult>  {
+            let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
+                .execute(tx).await?;
+            Ok(result)
         }
-
-        pub fn tx_auto_ref(&mut self) -> &Self {
-            self.query.tx_auto();
-            self
-        }
-    }
+    };
 }
 
 #[macro_export]
-macro_rules! impl_where {
-    ($db: ty) => {
+macro_rules! gen_where {
+    () => {
         pub fn and_where_eq<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_eq(f, v);
             self
@@ -38,7 +39,7 @@ macro_rules! impl_where {
         pub fn and_where_ne<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_ne(f, v);
             self
@@ -47,7 +48,7 @@ macro_rules! impl_where {
         pub fn and_where_ge<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_ge(f, v);
             self
@@ -56,7 +57,7 @@ macro_rules! impl_where {
         pub fn and_where_le<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_le(f, v);
             self
@@ -65,7 +66,7 @@ macro_rules! impl_where {
         pub fn and_where_gt<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_gt(f, v);
             self
@@ -74,7 +75,7 @@ macro_rules! impl_where {
         pub fn and_where_lt<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_lt(f, v);
             self
@@ -93,7 +94,7 @@ macro_rules! impl_where {
         pub fn and_where_between<S, V>(mut self, f: S, min: V, max: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_between(f, min, max);
             self
@@ -102,7 +103,7 @@ macro_rules! impl_where {
         pub fn and_where_not_between<S, V>(mut self, f: S, min: V, max: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.and_where_not_between(f, min, max);
             self
@@ -111,7 +112,7 @@ macro_rules! impl_where {
         pub fn and_where_in<S, V>(mut self, f: S, v: &'a [V]) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + Sync + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + Sync + 'a
         {
             self.query.and_where_in(f, v);
             self
@@ -120,7 +121,7 @@ macro_rules! impl_where {
         pub fn and_where_not_in<S, V>(mut self, f: S, v: &'a [V]) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + Sync + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + Sync + 'a
         {
             self.query.and_where_not_in(f, v);
             self
@@ -131,7 +132,7 @@ macro_rules! impl_where {
         pub fn or_where_eq<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_eq(f, v);
             self
@@ -140,7 +141,7 @@ macro_rules! impl_where {
         pub fn or_where_ne<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_ne(f, v);
             self
@@ -149,7 +150,7 @@ macro_rules! impl_where {
         pub fn or_where_ge<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_ge(f, v);
             self
@@ -158,7 +159,7 @@ macro_rules! impl_where {
         pub fn or_where_le<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_le(f, v);
             self
@@ -167,7 +168,7 @@ macro_rules! impl_where {
         pub fn or_where_gt<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_gt(f, v);
             self
@@ -176,7 +177,7 @@ macro_rules! impl_where {
         pub fn or_where_lt<S, V>(mut self, f: S, v: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_lt(f, v);
             self
@@ -195,7 +196,7 @@ macro_rules! impl_where {
         pub fn or_where_between<S, V>(mut self, f: S, min: V, max: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_between(f, min, max);
             self
@@ -204,7 +205,7 @@ macro_rules! impl_where {
         pub fn or_where_not_between<S, V>(mut self, f: S, min: V, max: V) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + 'a
         {
             self.query.or_where_not_between(f, min, max);
             self
@@ -213,7 +214,7 @@ macro_rules! impl_where {
         pub fn or_where_in<S, V>(mut self, f: S, v: &'a [V]) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + Sync + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + Sync + 'a
         {
             self.query.or_where_in(f, v);
             self
@@ -222,7 +223,7 @@ macro_rules! impl_where {
         pub fn or_where_not_in<S, V>(mut self, f: S, v: &'a [V]) -> Self
             where
                 S: ToString,
-                V: Encode<'a, $db> + Type<$db> + Send + Sync + 'a
+                V: Encode<'a, Database> + Type<Database> + Send + Sync + 'a
         {
             self.query.or_where_not_in(f, v);
             self

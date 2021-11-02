@@ -1,5 +1,4 @@
-use crate::adapt::arguments::Arguments;
-use crate::adapt::row::Row;
+use crate::types::{Arguments, Result, Row};
 
 pub trait Cherry: Sized + Send + Unpin {
 
@@ -9,6 +8,6 @@ pub trait Cherry: Sized + Send + Unpin {
 
     fn arguments<'a>(&'a self, arguments: &mut Arguments<'a>);
     
-    fn from_row(row: &Row) -> crate::Result<Self>;
+    fn from_row(row: &Row) -> Result<Self>;
 
 }

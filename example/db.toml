@@ -1,5 +1,0 @@
-[mysql.datasource1]
-url = "mysql://root:12345678@localhost:3306
-
-[mysql.datasource2]
-url = "mysql://root:12345678@localhost:3307

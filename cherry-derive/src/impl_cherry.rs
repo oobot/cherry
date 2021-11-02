@@ -23,7 +23,7 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
     ).collect::<String>();
 
     let arguments = fields_vec.iter().map(|s|
-        format!(r#" .add(&self.{}) "#, s)
+        format!(r#" arguments.add(&self.{}); "#, s)
     ).collect::<String>();
 
     let from_row = fields_vec.iter().map(|s|
@@ -39,11 +39,13 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
                 vec![ [fields] ]
             }
 
-            fn arguments<'a>(&'a self, arguments: &mut cherry::Arguments<'a>) {
-                arguments [arguments] ;
+            fn arguments<'a>(&'a self, arguments: &mut cherry::types::Arguments<'a>) {
+                use cherry::sqlx::Arguments as OtherArguments;
+                [arguments]
             }
 
-            fn from_row(row: &cherry::Row) -> Result<Self, cherry::error::Error> {
+            fn from_row(row: &cherry::types::Row) -> Result<Self, cherry::error::Error> {
+                use cherry::sqlx::Row as OtherRow;
                 Ok( Self { [from_row] } )
             }
         }
