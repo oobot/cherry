@@ -49,7 +49,7 @@ impl<'a> Insert<'a> {
     pub(crate) fn insert_replace<T>(datasource: TypeId, v: &'a [T]) -> Self where T: Cherry {
         let mut t = Self::new::<T>(datasource);
         t.size = v.len();
-        t.replace = Some(("INSERT INTO".into(), "INSERT REPLACE INTO".into()));
+        t.replace = Some(("INSERT INTO".into(), "REPLACE INTO".into()));
         v.iter().for_each(|v| v.arguments(&mut t.query.arguments) );
         t
     }

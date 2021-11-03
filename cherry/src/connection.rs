@@ -30,7 +30,7 @@ pub(crate) fn get(type_id: TypeId) -> Result<&'static Pool> {
 
 
 #[cfg_attr(feature = "json", derive(serde::Deserialize))]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PoolConfig {
     pub url: String,
     pub test_before_acquire: Option<bool>,
