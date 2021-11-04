@@ -144,6 +144,7 @@ async fn transaction() -> Result<(), Box<dyn Error>> {
     Foo.insert_bulk(&users).execute_with(&mut tx).await?;
     Foo.insert_bulk(&books).execute_with(&mut tx).await?;
     tx.commit().await?;
+    // Or tx.rollback().await?;
 
     Ok(())
 }

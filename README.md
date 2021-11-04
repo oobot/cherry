@@ -16,8 +16,8 @@ And enable one of the features ['runtime-actix-native-tls', 'runtime-async-std-n
 ```toml
 # Cargo.toml
 [dependencies]
-cherry = { version = "0.2.0", features = ["mysql", "runtime-async-std-rustls"] }
-cherry-derive = "0.2.0"
+cherry = { version = "0.2.1", features = ["mysql", "runtime-async-std-rustls"] }
+cherry-derive = "0.2.1"
 ```
 
 ### DataSource
@@ -172,6 +172,7 @@ async fn transaction() -> Result<(), Box<dyn Error>> {
     Foo.insert_bulk(&users).execute_with(&mut tx).await?;
     Foo.insert_bulk(&books).execute_with(&mut tx).await?;
     tx.commit().await?;
+    // Or tx.rollback().await?;
 
     Ok(())
 }
