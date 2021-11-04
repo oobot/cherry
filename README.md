@@ -1,9 +1,9 @@
 ## Cherry
 
-**WARNING: This crate is under development and not fully tested (mysql is partial tested at the moment).**
-
 Cherry is a lightweight asynchronous ORM, which is build on top of 
 [SQLx](https://github.com/launchbadge/sqlx). 
+
+**WARNING: This crate is under development and not fully tested (mysql is partial tested at the moment).**
 
 ### Dependency
 Must enable one of the database features: ['mysql', 'postgres', 'sqlite', 'mssql'].
