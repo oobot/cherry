@@ -18,7 +18,17 @@ pub mod error {
 
 pub mod sqlx {
     pub use sqlx::{Database, Decode, Encode, Arguments, Row};
-    pub use sqlx::database::HasArguments;
+    // pub use sqlx::database::HasArguments;
+
+    #[cfg(feature = "mysql")]
+    pub use sqlx::mysql::{MySql, MySqlArguments, MySqlQueryResult, MySqlRow};
+    #[cfg(feature = "postgres")]
+    pub use sqlx::postgres::{PgArguments, PgQueryResult, PgRow, Postgres};
+    #[cfg(feature = "sqlite")]
+    pub use sqlx::sqlite::{Sqlite, SqliteArguments, SqliteQueryResult, SqliteRow};
+    #[cfg(feature = "mssql")]
+    pub use sqlx::mssql::{Mssql, MssqlArguments, MssqlQueryResult, MssqlRow};
+
     pub use sqlx::types::Type;
     #[cfg(feature = "json")]
     pub use sqlx::types::Json;
@@ -26,6 +36,7 @@ pub mod sqlx {
     pub use sqlx::types::Uuid;
 }
 
+/*
 #[cfg(feature = "mysql")]
 pub mod mysql {
     pub use sqlx::mysql::{MySql, MySqlArguments, MySqlQueryResult, MySqlRow};
@@ -45,3 +56,7 @@ pub mod sqlite {
 pub mod mssql {
     pub use sqlx::mssql::{Mssql, MssqlArguments, MssqlQueryResult, MssqlRow};
 }
+*/
+
+#[cfg(not(any(feature = "mysql", feature = "postgres", feature = "sqlite", feature = "mssql")))]
+compile_error!("one of the features ['mysql', 'postgres', 'sqlite', 'mssql'] must be enabled");

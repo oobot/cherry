@@ -1,47 +1,149 @@
 // #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code)]
 
+// #[cfg(test)]
 #[macro_use]
 extern crate cherry_derive;
 
-use std::any::{Any, TypeId};
-use std::collections::BTreeMap;
-use std::iter::FromIterator;
-
-// use cherry::connection::{self, PoolConfig};
-// use cherry::DataSource;
-
 #[async_std::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // connection::setup_pools(pool_config()).await?;
-
-    // Update::and_where();
-
-
     todo!()
 }
 
+/// DataSource
 
-// fn pool_config() -> BTreeMap<TypeId, PoolConfig> {
-//     BTreeMap::from_iter([
-//         (Other.type_id(), PoolConfig {
-//             url: "mysql://root:12345678@localhost:3306/other".to_owned(),
-//             ..Default::default()
-//         }),
-//         (Another.type_id(), PoolConfig {
-//             url: "mysql://root:12345678@localhost:3306/another".to_owned(),
-//             ..Default::default()
-//         }),
-//     ])
-// }
+use std::any::Any;
+use std::error::Error;
 
-// struct Other;
-// struct Another;
-//
-// impl DataSource for Other {}
-// impl DataSource for Another {}
+use cherry::connection::{self, PoolConfig};
+use cherry::DataSource;
+
+pub struct Foo;
+pub struct Bar;
+
+impl DataSource for Foo {}
+impl DataSource for Bar {}
+
+pub async fn setup() -> Result<(), Box<dyn Error>> {
+    let config = [
+        (Foo.type_id(), PoolConfig {
+            url: "mysql://root:12345678@localhost:3306/foo".to_owned(),
+            ..Default::default()
+        }),
+        (Bar.type_id(), PoolConfig {
+            url: "mysql://root:12345678@localhost:3306/bar".to_owned(),
+            ..Default::default()
+        }),
+    ];
+
+    // Setup the database connection pools.
+    connection::setup_pools(config).await?;
+    Ok(())
+}
+
+/// Model
 
 #[derive(Cherry)]
-struct User {
-    id: u64,
-    name: String,
+#[cherry(table = "my_user")] // Change the default table name.
+pub struct User {
+    pub id: u64,
+    pub name: String,
+}
+
+#[derive(Cherry)]
+pub struct Book {
+    pub id: u64,
+    pub name: String,
+}
+
+/// Insert
+
+use cherry::sqlx::MySqlQueryResult;
+
+async fn insert() -> Result<(), Box<dyn Error>> {
+    let user = User { id: 1, name: "Bob".to_owned(), };
+
+    // Insert one
+    let result: MySqlQueryResult = Foo.insert(&user).execute().await?;
+    assert_eq!(result.rows_affected(), 1);
+
+    let user1 = User { id: 2, name: "Sam".to_owned() };
+    let user2 = User { id: 3, name: "Jack".to_owned() };
+
+    let result: MySqlQueryResult = Foo.insert_bulk(&[user1, user2]).execute().await?;
+    assert_eq!(result.rows_affected(), 2);
+
+    Ok(())
+}
+
+/// Delete
+
+async fn delete() -> Result<(), Box<dyn Error>> {
+    let result: MySqlQueryResult = Foo.delete::<User>()
+        .and_where_eq("id", 100)
+        .execute()
+        .await?;
+
+    Ok(())
+}
+
+/// Update
+
+async fn update() -> Result<(), Box<dyn Error>> {
+    let result: MySqlQueryResult = Foo.update::<User>()
+        .set("name", "New Name")
+        .or_where_lt("id", 100)
+        .or_where_gt("id", 200)
+        .execute()
+        .await?;
+
+    Ok(())
+}
+
+/// Select
+
+async fn select() -> Result<(), Box<dyn Error>> {
+    // Select optional one.
+    let result: Option<User> = Foo.select()
+        .and_where_eq("id", 123)
+        .fetch()
+        .await?;
+
+    // Select list.
+    let result: Vec<User> = Foo.select()
+        .and_where_between("id", 100, 200)
+        .and_where_ne("name", "Jack")
+        .fetch_all()
+        .await?;
+
+    Ok(())
+}
+
+/// Transaction
+
+use cherry::types::Transaction;
+
+async fn transaction() -> Result<(), Box<dyn Error>> {
+    let users = [
+        User { id: 1, name: "Henry".to_owned() },
+        User { id: 2, name: "Jane".to_owned() }
+    ];
+
+    let books = [
+        Book { id: 1, name: "Book name 1".to_owned() },
+        Book { id: 2, name: "Book name 2".to_owned() }
+    ];
+
+    // Without transaction
+    Foo.insert_bulk(&users).execute().await?;
+
+    // Auto transaction
+    Foo.insert_bulk(&users).execute_tx().await?;
+
+    // Manual transaction
+    let mut tx: Transaction = Foo.begin().await?;
+    Foo.insert_bulk(&users).execute_with(&mut tx).await?;
+    Foo.insert_bulk(&books).execute_with(&mut tx).await?;
+    tx.commit().await?;
+
+    Ok(())
 }

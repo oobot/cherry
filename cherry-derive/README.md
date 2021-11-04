@@ -1,1 +1,1 @@
-[Cherry](https://crates.io/crates/cherry) macro crate.
+[Cherry](https://crates.io/crates/cherry) derive macro crate.

@@ -10,7 +10,8 @@ use crate::types::{Pool, Result};
 
 static POOLS: OnceCell<BTreeMap<TypeId, Pool>> = OnceCell::new();
 
-pub async fn setup_pools(config: BTreeMap<TypeId, PoolConfig>) -> Result<()> {
+pub async fn setup_pools<T>(config: T) -> Result<()>
+    where T: IntoIterator<Item = (TypeId, PoolConfig)> {
     let mut pools = BTreeMap::new();
     for (key, v) in config {
         pools.insert(key, v.to_pool().await?);
