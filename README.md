@@ -1,11 +1,11 @@
-## Cherry
+# Cherry 🍒
 
 Cherry is an asynchronous ORM, which support MySQL, PostgreSQL, SQLite and SQL Server. 
 It's lightweight and build on top of [SQLx](https://github.com/launchbadge/sqlx). 
 
 **WARNING: This crate is under development (mysql is partial tested at the moment).**
 
-### Dependency
+## Dependency
 enable one of the database features ['mysql', 'postgres', 'sqlite', 'mssql'].
 
 And enable one of the features ['runtime-actix-native-tls', 'runtime-async-std-native-tls', 
@@ -20,7 +20,7 @@ cherry = { version = "0.2.1", features = ["mysql", "runtime-async-std-rustls"] }
 cherry-derive = "0.2.1"
 ```
 
-### DataSource
+## DataSource
 
 You can set multiple DataSources as you need.
 
@@ -56,7 +56,7 @@ impl DataSource for Foo {}
 impl DataSource for Bar {}
 ```
 
-### Model
+## Model
 ```rust
 // lib.rs/main.rs need this.
 #[macro_use]
@@ -76,7 +76,7 @@ pub struct Book {
 }
 ```
 
-### Insert
+## Insert
 ```rust
 async fn insert() -> Result<(), Box<dyn Error>> {
     // Insert one
@@ -97,7 +97,7 @@ async fn insert() -> Result<(), Box<dyn Error>> {
 ```
 Also support other insertion such as: `insert replace`, `insert ignore`  ...
 
-### Delete
+## Delete
 
 ```rust
 async fn delete() -> Result<(), Box<dyn Error>> {
@@ -110,7 +110,7 @@ async fn delete() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-### Update
+## Update
 
 ```rust
 async fn update() -> Result<(), Box<dyn Error>> {
@@ -125,7 +125,7 @@ async fn update() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-### Select
+## Select
 ```rust
 async fn select() -> Result<(), Box<dyn Error>> {
     // Select optional one.
@@ -145,7 +145,7 @@ async fn select() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-### Transaction
+## Transaction
 
 ```rust
 use cherry::types::Transaction;
@@ -178,7 +178,7 @@ async fn transaction() -> Result<(), Box<dyn Error>> {
 }
 ```
 
-### TODO
+## TODO
 - [] Custom type without sqlx imported (if possible).
 - [] Rename struct field.
 - [] improve databases support and more test.
