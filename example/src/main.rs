@@ -17,12 +17,6 @@ use std::error::Error;
 use cherry::connection::{self, PoolConfig};
 use cherry::DataSource;
 
-pub struct Foo;
-pub struct Bar;
-
-impl DataSource for Foo {}
-impl DataSource for Bar {}
-
 pub async fn setup() -> Result<(), Box<dyn Error>> {
     let config = [
         (Foo.type_id(), PoolConfig {
@@ -37,8 +31,15 @@ pub async fn setup() -> Result<(), Box<dyn Error>> {
 
     // Setup the database connection pools.
     connection::setup_pools(config).await?;
+
     Ok(())
 }
+
+pub struct Foo;
+pub struct Bar;
+
+impl DataSource for Foo {}
+impl DataSource for Bar {}
 
 /// Model
 
@@ -57,19 +58,18 @@ pub struct Book {
 
 /// Insert
 
-use cherry::sqlx::MySqlQueryResult;
-
 async fn insert() -> Result<(), Box<dyn Error>> {
-    let user = User { id: 1, name: "Bob".to_owned(), };
-
     // Insert one
-    let result: MySqlQueryResult = Foo.insert(&user).execute().await?;
+    let user = User { id: 1, name: "Bob".to_owned(), };
+    let result = Foo.insert(&user).execute().await?;
     assert_eq!(result.rows_affected(), 1);
 
-    let user1 = User { id: 2, name: "Sam".to_owned() };
-    let user2 = User { id: 3, name: "Jack".to_owned() };
-
-    let result: MySqlQueryResult = Foo.insert_bulk(&[user1, user2]).execute().await?;
+    // Insert multiple
+    let users = [
+        User { id: 2, name: "Sam".to_owned() },
+        User { id: 3, name: "Jack".to_owned() }
+    ];
+    let result = Foo.insert_bulk(&users).execute().await?;
     assert_eq!(result.rows_affected(), 2);
 
     Ok(())
@@ -78,7 +78,7 @@ async fn insert() -> Result<(), Box<dyn Error>> {
 /// Delete
 
 async fn delete() -> Result<(), Box<dyn Error>> {
-    let result: MySqlQueryResult = Foo.delete::<User>()
+    let result = Foo.delete::<User>()
         .and_where_eq("id", 100)
         .execute()
         .await?;
@@ -89,7 +89,7 @@ async fn delete() -> Result<(), Box<dyn Error>> {
 /// Update
 
 async fn update() -> Result<(), Box<dyn Error>> {
-    let result: MySqlQueryResult = Foo.update::<User>()
+    let result = Foo.update::<User>()
         .set("name", "New Name")
         .or_where_lt("id", 100)
         .or_where_gt("id", 200)

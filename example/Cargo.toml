@@ -9,7 +9,7 @@ edition = "2018"
 async-std = {version = "1.10.0", features = ["attributes"]}
 toml = "0.5.8"
 
-cherry = {package = "cherry", path = "../../cherry", features = ["mysql", "json", "runtime-async-std-rustls"]}
+cherry = {package = "cherry", path = "../../cherry", features = ["mysql", "runtime-async-std-rustls"]}
 cherry-derive = {package = "cherry-derive", path = "../cherry-derive" }
 #[build-dependencies]
 

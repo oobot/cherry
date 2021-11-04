@@ -1,18 +1,17 @@
 ## Cherry
 
-Cherry is a lightweight asynchronous ORM, which is build on top of 
-[SQLx](https://github.com/launchbadge/sqlx). 
+Cherry is an asynchronous ORM, which support MySQL, PostgreSQL, SQLite and SQL Server. 
+It's lightweight and build on top of [SQLx](https://github.com/launchbadge/sqlx). 
 
-**WARNING: This crate is under development and not fully tested (mysql is partial tested at the moment).**
+**WARNING: This crate is under development (mysql is partial tested at the moment).**
 
 ### Dependency
-Must enable one of the database features: ['mysql', 'postgres', 'sqlite', 'mssql'].
-And only one database enable allowed at the same moment. 
+enable one of the database features ['mysql', 'postgres', 'sqlite', 'mssql'].
 
-One of the features ['runtime-actix-native-tls', 'runtime-async-std-native-tls', 
+And enable one of the features ['runtime-actix-native-tls', 'runtime-async-std-native-tls', 
 'runtime-tokio-native-tls', 'runtime-actix-rustls', 'runtime-async-std-rustls', 
-'runtime-tokio-rustls'] must be enabled. More details see 
-[Cargo Feature Flags](https://github.com/launchbadge/sqlx#cargo-feature-flags).
+'runtime-tokio-rustls']. More details see 
+[SQLx Feature Flags](https://github.com/launchbadge/sqlx#cargo-feature-flags).
 
 ```toml
 # Cargo.toml
@@ -32,12 +31,6 @@ use std::error::Error;
 use cherry::connection::{self, PoolConfig};
 use cherry::DataSource;
 
-pub struct Foo;
-pub struct Bar;
-
-impl DataSource for Foo {}
-impl DataSource for Bar {}
-
 pub async fn setup() -> Result<(), Box<dyn Error>> {
     let config = [
         (Foo.type_id(), PoolConfig {
@@ -52,8 +45,15 @@ pub async fn setup() -> Result<(), Box<dyn Error>> {
 
     // Setup the database connection pools.
     connection::setup_pools(config).await?;
+
     Ok(())
 }
+
+pub struct Foo;
+pub struct Bar;
+
+impl DataSource for Foo {}
+impl DataSource for Bar {}
 ```
 
 ### Model
@@ -78,19 +78,18 @@ pub struct Book {
 
 ### Insert
 ```rust
-use cherry::sqlx::MySqlQueryResult;
-
 async fn insert() -> Result<(), Box<dyn Error>> {
-    let user = User { id: 1, name: "Bob".to_owned(), };
-
     // Insert one
-    let result: MySqlQueryResult = Foo.insert(&user).execute().await?;
+    let user = User { id: 1, name: "Bob".to_owned(), };
+    let result = Foo.insert(&user).execute().await?;
     assert_eq!(result.rows_affected(), 1);
 
-    let user1 = User { id: 2, name: "Sam".to_owned() };
-    let user2 = User { id: 3, name: "Jack".to_owned() };
-
-    let result: MySqlQueryResult = Foo.insert_bulk(&[user1, user2]).execute().await?;
+    // Insert multiple
+    let users = [
+        User { id: 2, name: "Sam".to_owned() },
+        User { id: 3, name: "Jack".to_owned() }
+    ];
+    let result = Foo.insert_bulk(&users).execute().await?;
     assert_eq!(result.rows_affected(), 2);
 
     Ok(())
@@ -102,7 +101,7 @@ Also support other insertion such as: `insert replace`, `insert ignore`  ...
 
 ```rust
 async fn delete() -> Result<(), Box<dyn Error>> {
-    let result: MySqlQueryResult = Foo.delete::<User>()
+    let result = Foo.delete::<User>()
         .and_where_eq("id", 100)
         .execute()
         .await?;
@@ -115,7 +114,7 @@ async fn delete() -> Result<(), Box<dyn Error>> {
 
 ```rust
 async fn update() -> Result<(), Box<dyn Error>> {
-    let result: MySqlQueryResult = Foo.update::<User>()
+    let result = Foo.update::<User>()
         .set("name", "New Name")
         .or_where_lt("id", 100)
         .or_where_gt("id", 200)

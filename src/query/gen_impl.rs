@@ -5,7 +5,7 @@ macro_rules! gen_execute {
             let pool = connection::get(self.query.datasource)?;
             let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
                 .execute(pool).await?;
-            Ok(result)
+            Ok(QueryResult::from(result))
         }
 
         pub async fn execute_tx(mut self) -> Result<QueryResult> {
@@ -13,13 +13,13 @@ macro_rules! gen_execute {
             let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
                 .execute(&mut tx).await?;
             tx.commit().await?;
-            Ok(result)
+            Ok(QueryResult::from(result))
         }
 
         pub async fn execute_with(mut self, tx: &mut Transaction<'a>) -> Result<QueryResult>  {
             let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
                 .execute(tx).await?;
-            Ok(result)
+            Ok(QueryResult::from(result))
         }
     };
 }

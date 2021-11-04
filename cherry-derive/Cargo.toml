@@ -5,8 +5,8 @@ authors = ["bugslabx <bugslabx@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bugslabx/cherry"
-keywords = ["ORM", "Hibernate", "MyBatis", "ActiveRecord", "Ebean"]
-description = "A lightweight asynchronous ORM, which is build on top of SQLx."
+keywords = ["ORM", "MySQL", "PostgreSQL", "SQLite", "SQLServer"]
+description = "Cherry is an asynchronous ORM, which support MySQL, PostgreSQL, SQLite and SQL Server."
 
 [lib]
 name = "cherry_derive"
