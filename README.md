@@ -1,6 +1,6 @@
 # Cherry 🍒
 
-Cherry is an asynchronous ORM, which support MySQL, PostgreSQL, SQLite and SQL Server. 
+Cherry is an asynchronous ORM, support MySQL, PostgreSQL, SQLite and SQL Server. 
 It's lightweight and build on top of [SQLx](https://github.com/launchbadge/sqlx). 
 
 **WARNING: This crate is under development (mysql is partial tested at the moment).**
@@ -16,8 +16,8 @@ And enable one of the features ['runtime-actix-native-tls', 'runtime-async-std-n
 ```toml
 # Cargo.toml
 [dependencies]
-cherry = { version = "0.2.1", features = ["mysql", "runtime-async-std-rustls"] }
-cherry-derive = "0.2.1"
+cherry = { version = "0.2.2", features = ["mysql", "runtime-async-std-rustls"] }
+cherry-derive = "0.2.2"
 ```
 
 ## DataSource
@@ -58,21 +58,17 @@ impl DataSource for Bar {}
 
 ## Model
 ```rust
-// lib.rs/main.rs need this.
-#[macro_use]
-extern crate cherry_derive;
-
 #[derive(Cherry)]
-#[cherry(table = "my_user")] // Change the default table name.
-pub struct User {
-    pub id: u64,
-    pub name: String,
+struct User {
+    id: u64,
+    name: String,
 }
 
 #[derive(Cherry)]
-pub struct Book {
-    pub id: u64,
-    pub name: String,
+#[cherry(table = "my_book")] // Change the default table name.
+struct Book {
+    id: u64,
+    name: String,
 }
 ```
 

@@ -44,16 +44,16 @@ impl DataSource for Bar {}
 /// Model
 
 #[derive(Cherry)]
-#[cherry(table = "my_user")] // Change the default table name.
-pub struct User {
-    pub id: u64,
-    pub name: String,
+struct User {
+    id: u64,
+    name: String,
 }
 
 #[derive(Cherry)]
-pub struct Book {
-    pub id: u64,
-    pub name: String,
+#[cherry(table = "my_book")] // Change the default table name.
+struct Book {
+    id: u64,
+    name: String,
 }
 
 /// Insert

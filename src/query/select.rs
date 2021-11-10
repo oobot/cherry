@@ -33,6 +33,11 @@ impl<'a, T> Select<'a, T> where T: Cherry {
         self
     }
 
+    pub fn fields_all(mut self) -> Self {
+        self.query.sql_builder.fields(&T::columns());
+        self
+    }
+
     pub fn order_asc<S: ToString>(mut self, f: S) -> Self {
         self.query.sql_builder.order_asc(f);
         self
