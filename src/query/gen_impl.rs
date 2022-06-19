@@ -2,22 +2,28 @@
 macro_rules! gen_execute {
     () => {
         pub async fn execute(mut self) -> Result<QueryResult> {
+            let sql = self.build_sql()?;
+            debug!("{}", sql);
             let pool = connection::get(self.query.datasource)?;
-            let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
+            let result = sqlx::query_with(sql.as_str(), self.query.arguments)
                 .execute(pool).await?;
             Ok(QueryResult::from(result))
         }
 
         pub async fn execute_tx(mut self) -> Result<QueryResult> {
+            let sql = self.build_sql()?;
+            debug!("{}", sql);
             let mut tx = connection::get(self.query.datasource)?.begin().await?;
-            let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
+            let result = sqlx::query_with(sql.as_str(), self.query.arguments)
                 .execute(&mut tx).await?;
             tx.commit().await?;
             Ok(QueryResult::from(result))
         }
 
         pub async fn execute_with(mut self, tx: &mut Transaction<'a>) -> Result<QueryResult>  {
-            let result = sqlx::query_with(self.build_sql()?.as_str(), self.query.arguments)
+            let sql = self.build_sql()?;
+            debug!("{}", sql);
+            let result = sqlx::query_with(sql.as_str(), self.query.arguments)
                 .execute(tx).await?;
             Ok(QueryResult::from(result))
         }

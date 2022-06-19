@@ -1,5 +1,4 @@
-use std::any::TypeId;
-
+use log::debug;
 use sql_builder::SqlBuilder;
 use sqlx::encode::Encode;
 use sqlx::types::Type;
@@ -13,9 +12,9 @@ pub struct Update<'a> {
 }
 
 impl<'a> Update<'a> {
-    pub(crate) fn new<T: Cherry>(datasource: TypeId) -> Self {
+    pub(crate) fn new<T: Cherry>(ds: &'a str) -> Self {
         Self {
-            query: QueryBuilder::new::<T>(datasource, SqlBuilder::update_table(T::table()))
+            query: QueryBuilder::new::<T>(ds, SqlBuilder::update_table(T::table()))
         }
     }
 

@@ -1,30 +1,35 @@
 // #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
 
-pub(crate) mod cherry;
-pub(crate) mod datasource;
-pub(crate) mod query;
+#[cfg(test)]
+#[macro_use]
+extern crate futures_await_test;
 
 pub use {
     cherry::Cherry,
+    connection::PoolConfig,
     datasource::DataSource,
+    types::Transaction,
 };
 
+pub(crate) mod cherry;
+pub(crate) mod connection;
+pub(crate) mod query;
+pub(crate) mod datasource;
+
 pub mod types;
-pub mod connection;
 
 pub mod error {
     pub use anyhow::Error;
 }
 
 pub mod sqlx {
-    pub use sqlx::{Database, Decode, Encode, Arguments, Row, types::Type};
-
+    pub use sqlx::{Arguments, Database, Decode, Encode, Row, types::Type};
     #[cfg(feature = "json")]
     pub use sqlx::types::Json;
     #[cfg(feature = "uuid")]
     pub use sqlx::types::Uuid;
 
-    // #[cfg(feature = "mysql")]
+// #[cfg(feature = "mysql")]
     // pub use sqlx::mysql::{MySql, MySqlArguments, MySqlQueryResult, MySqlRow};
     // #[cfg(feature = "postgres")]
     // pub use sqlx::postgres::{PgArguments, PgQueryResult, PgRow, Postgres};

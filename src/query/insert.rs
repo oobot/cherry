@@ -1,5 +1,4 @@
-use std::any::TypeId;
-
+use log::debug;
 use sql_builder::SqlBuilder;
 
 use crate::{Cherry, connection, gen_execute};
@@ -15,39 +14,39 @@ pub struct Insert<'a> {
 
 impl<'a> Insert<'a> {
 
-    pub(crate) fn new<T>(datasource: TypeId) -> Self where T: Cherry {
+    pub(crate) fn new<T>(ds: &'a str) -> Self where T: Cherry {
         Self {
-            query: QueryBuilder::new::<T>(datasource, SqlBuilder::insert_into(T::table())),
+            query: QueryBuilder::new::<T>(ds, SqlBuilder::insert_into(T::table())),
             columns: T::columns(),
             replace: None,
             size: 0,
         }
     }
 
-    pub(crate) fn insert<T>(datasource: TypeId, v: &'a T) -> Self where T: Cherry {
-        let mut t = Self::new::<T>(datasource);
+    pub(crate) fn insert<T>(ds: &'a str, v: &'a T) -> Self where T: Cherry {
+        let mut t = Self::new::<T>(ds);
         t.size = 1;
         v.arguments(&mut t.query.arguments);
         t
     }
 
-    pub(crate) fn insert_bulk<T>(datasource: TypeId, v: &'a [T]) -> Self where T: Cherry {
-        let mut t = Self::new::<T>(datasource);
+    pub(crate) fn insert_bulk<T>(ds: &'a str, v: &'a [T]) -> Self where T: Cherry {
+        let mut t = Self::new::<T>(ds);
         t.size = v.len();
         v.iter().for_each(|v| v.arguments(&mut t.query.arguments) );
         t
     }
 
-    pub(crate) fn insert_ignore<T>(datasource: TypeId, v: &'a [T]) -> Self where T: Cherry {
-        let mut t = Self::new::<T>(datasource);
+    pub(crate) fn insert_ignore<T>(ds: &'a str, v: &'a [T]) -> Self where T: Cherry {
+        let mut t = Self::new::<T>(ds);
         t.size = v.len();
         t.replace = Some(("INSERT".into(), "INSERT IGNORE".into()));
         v.iter().for_each(|v| v.arguments(&mut t.query.arguments) );
         t
     }
 
-    pub(crate) fn insert_replace<T>(datasource: TypeId, v: &'a [T]) -> Self where T: Cherry {
-        let mut t = Self::new::<T>(datasource);
+    pub(crate) fn insert_replace<T>(ds: &'a str, v: &'a [T]) -> Self where T: Cherry {
+        let mut t = Self::new::<T>(ds);
         t.size = v.len();
         t.replace = Some(("INSERT INTO".into(), "REPLACE INTO".into()));
         v.iter().for_each(|v| v.arguments(&mut t.query.arguments) );

@@ -1,4 +1,3 @@
-use std::any::TypeId;
 use std::marker::PhantomData;
 
 use sql_builder::SqlBuilder;
@@ -10,14 +9,14 @@ use crate::types::{Arguments, Database};
 
 pub(crate) struct QueryBuilder<'a> {
     _keep: PhantomData<&'a ()>,
-    pub(crate) datasource: TypeId,
+    pub(crate) datasource: &'a str,
     pub(crate) sql_builder: SqlBuilder,
     pub(crate) arguments: Arguments<'a>,
 }
 
 impl<'a> QueryBuilder<'a> {
     
-    pub(crate) fn new<T: Cherry>(datasource: TypeId, sql_builder: SqlBuilder) -> Self {
+    pub(crate) fn new<T: Cherry>(datasource: &'a str, sql_builder: SqlBuilder) -> Self {
         Self { _keep: PhantomData, datasource, sql_builder, arguments: Arguments::default() }
     }
 

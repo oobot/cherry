@@ -1,6 +1,5 @@
-use std::any::TypeId;
-
 use anyhow::anyhow;
+use log::debug;
 use sql_builder::SqlBuilder;
 use sqlx::{Encode, Type};
 
@@ -17,17 +16,17 @@ pub struct InsertUpdate<'a> {
 
 impl<'a> InsertUpdate<'a> {
 
-    fn new<T>(datasource: TypeId) -> Self where T: Cherry {
+    fn new<T>(ds: &'a str) -> Self where T: Cherry {
         Self {
-            query: QueryBuilder::new::<T>(datasource, SqlBuilder::insert_into(T::table())),
+            query: QueryBuilder::new::<T>(ds, SqlBuilder::insert_into(T::table())),
             columns: T::columns(),
             size: 0,
             fields: vec![]
         }
     }
 
-    pub(crate) fn insert_update<T>(datasource: TypeId, v: &'a [T]) -> Self where T: Cherry {
-        let mut t = Self::new::<T>(datasource);
+    pub(crate) fn insert_update<T>(ds: &'a str, v: &'a [T]) -> Self where T: Cherry {
+        let mut t = Self::new::<T>(ds);
         t.size = v.len();
         v.iter().for_each(|v| v.arguments(&mut t.query.arguments) );
         t
