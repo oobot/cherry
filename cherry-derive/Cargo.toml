@@ -1,10 +1,10 @@
 [package]
 name = "cherry-derive"
-version = "0.2.2"
-authors = ["bugslabx <bugslabx@gmail.com>"]
+version = "0.3.0"
+authors = ["bitlabx <hellobug996@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/bugslabx/cherry"
+repository = "https://github.com/bitlabx/cherry"
 keywords = ["ORM", "MySQL", "PostgreSQL", "SQLite", "SQLServer"]
 description = "An asynchronous ORM, support MySQL, PostgreSQL, SQLite and SQL Server."
 

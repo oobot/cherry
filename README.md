@@ -8,7 +8,7 @@ It's lightweight and build on top of [SQLx](https://github.com/launchbadge/sqlx)
 ```toml
 [dependencies]
 cherry = "0.3.0"
-cherry-derive = "0.2.2"
+cherry-derive = "0.3.0"
 ```
 
 ```rust
@@ -33,9 +33,11 @@ pub async fn setup() -> Result<(), Box<dyn Error>> {
 pub struct Foo;
 
 impl DataSource for Foo {}
-```
 
-You can set multiple DataSources as you need.
+// You can more than one DataSources if you need.
+// pub struct Bar;
+// impl DataSource for Bar {}
+```
 
 ## Select
 ```rust
@@ -66,10 +68,11 @@ async fn insert() -> Result<(), Box<dyn Error>> {
     let result = Foo::insert_bulk(&users).execute().await?;
     assert_eq!(result.rows_affected(), 2);
 
+    // insert replace, insert ignore etc.
+    
     Ok(())
 }
 ```
-Also support other insertion such as: `insert replace`, `insert ignore` etc.
 
 ## Delete
 

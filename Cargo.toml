@@ -1,7 +1,7 @@
 [package]
 name = "cherry"
 version = "0.3.0"
-authors = ["bitlabx <bugslabx@gmail.com>"]
+authors = ["bitlabx <hellobug996@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bitlabx/cherry"
