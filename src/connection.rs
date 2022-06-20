@@ -44,6 +44,7 @@ pub(crate) fn get(ds: &str) -> Result<&Pool> {
         while let Some((k, v)) = lock.pop() {
             map.insert(k, v);
         }
+        POOLS.set(map).expect("initialize connection pools multiple times");
     }
 
     match POOLS.get() {
