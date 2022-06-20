@@ -34,7 +34,7 @@ pub struct Foo;
 
 impl DataSource for Foo {}
 
-// You can more than one DataSources if you need.
+// You can setup more than one DataSources if you need.
 // pub struct Bar;
 // impl DataSource for Bar {}
 ```
