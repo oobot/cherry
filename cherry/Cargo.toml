@@ -1,0 +1,78 @@
+[package]
+name = "cherry"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+description.workspace =true
+
+[lib]
+required-features = []
+
+[[test]]
+name = "derive_test"
+path = "tests/derive_test.rs"
+required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
+
+[dependencies]
+log.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+once_cell.workspace = true
+sql-builder.workspace = true
+sqlx.workspace = true
+serde = { workspace = true, optional = true }
+serde_derive = { workspace = true, optional = true }
+
+[dev-dependencies]
+sqlx = { workspace = true, features = ["runtime-async-std-rustls"]}
+#sqlx = { workspace = true, features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]}
+cherry-derive = { package = "cherry-derive", path = "../cherry-derive" }
+
+
+[features]
+default = ["sqlx/default"]
+macros = ["sqlx/sqlx-macros"]
+migrate = ["sqlx/migrate"]
+
+all = [ "tls", "all-databases", "all-types", ]
+
+all-databases = ["mysql", "sqlite", "postgres", "mssql", "any",]
+mysql = ["sqlx/mysql"]
+postgres = ["sqlx/postgres"]
+sqlite = ["sqlx/sqlite"]
+mssql = ["sqlx/mssql"]
+any = ["sqlx/any"]
+
+all-types = [
+    "bigdecimal", "decimal", "json", "time", "chrono",
+    "ipnetwork", "mac_address", "uuid", "bit-vec", "bstr", "git2",
+]
+bit-vec = ["sqlx/bit-vec"]
+decimal = ["sqlx/decimal"]
+bigdecimal = ["sqlx/bigdecimal"]
+bstr = ["sqlx/bstr"]
+chrono = ["sqlx/chrono"]
+git2 = ["sqlx/git2"]
+ipnetwork = ["sqlx/ipnetwork"]
+json = ["sqlx/json", "serde", "serde_derive"]
+mac_address = ["sqlx/mac_address"]
+time = ["sqlx/time"]
+uuid = ["sqlx/uuid"]
+
+offline = ["sqlx/offline"]
+tls = ["sqlx/tls"]
+
+runtime-actix = ["sqlx/runtime-actix"]
+runtime-actix-native-tls = ["sqlx/runtime-actix-native-tls"]
+runtime-actix-rustls = ["sqlx/runtime-actix-rustls"]
+
+runtime-async-std = ["sqlx/runtime-async-std"]
+runtime-async-std-native-tls = ["sqlx/runtime-async-std-native-tls"]
+runtime-async-std-rustls = ["sqlx/runtime-async-std-rustls"]
+
+runtime-tokio = ["sqlx/runtime-tokio"]
+runtime-tokio-native-tls = ["sqlx/runtime-tokio-native-tls"]
+runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]

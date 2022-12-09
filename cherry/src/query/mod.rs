@@ -5,3 +5,4 @@ pub(crate) mod insert_update;
 pub(crate) mod update;
 pub(crate) mod delete;
 pub(crate) mod select;
+pub(crate) mod raw_sql;

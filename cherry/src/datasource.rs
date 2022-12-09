@@ -7,6 +7,7 @@ use crate::connection::PoolConfig;
 use crate::query::delete::Delete;
 use crate::query::insert::Insert;
 use crate::query::insert_update::InsertUpdate;
+use crate::query::raw_sql::RawSql;
 use crate::query::select::Select;
 use crate::query::update::Update;
 use crate::types::{Result, Transaction};
@@ -48,6 +49,10 @@ pub trait DataSource {
 
     fn select<'a, T>() -> Select<'a, T> where T: Cherry {
         Select::new(type_name::<Self>())
+    }
+
+    fn raw_sql<'a>() -> RawSql<'a> {
+        RawSql::new(type_name::<Self>())
     }
 
     async fn begin<'a>() -> Result<Transaction<'a>> {

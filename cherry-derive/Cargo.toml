@@ -1,19 +1,19 @@
 [package]
 name = "cherry-derive"
-version = "0.3.0"
-authors = ["bitlabx <hellobug996@gmail.com>"]
-edition = "2018"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/bitlabx/cherry"
-keywords = ["ORM", "MySQL", "PostgreSQL", "SQLite", "SQLServer"]
-description = "An asynchronous ORM, support MySQL, PostgreSQL, SQLite and SQL Server."
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+description.workspace =true
 
 [lib]
-name = "cherry_derive"
+#name = "cherry_derive"
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "1.0.26"
-syn = "1.0.68"
-quote = "1.0.10"
-heck = "0.3.2"
+proc-macro2.workspace = true
+syn.workspace = true
+quote.workspace = true
+heck.workspace = true

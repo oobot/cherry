@@ -1,70 +1,27 @@
-[package]
-name = "cherry"
+[workspace]
+members = ["cherry-derive", "cherry"]
+
+[workspace.package]
 version = "0.3.0"
 authors = ["bitlabx <hellobug996@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/bitlabx/cherry"
 keywords = ["ORM", "MySQL", "PostgreSQL", "SQLite", "SQLServer"]
 description = "An asynchronous ORM, support MySQL, PostgreSQL, SQLite and SQL Server."
 
-[lib]
-name = "cherry"
-
-[features]
-default = ["sqlx/default", "mysql", "runtime-async-std-rustls"]
-mysql = ["sqlx/mysql"]
-postgres = ["sqlx/postgres"]
-sqlite = ["sqlx/sqlite"]
-mssql = ["sqlx/mssql"]
-
-uuid = ["sqlx/uuid"]
-json = ["sqlx/json", "serde", "serde_derive"]
-time = ["sqlx/time"]
-chrono = ["sqlx/chrono"]
-
-macros = ["sqlx/sqlx-macros"]
-bit-vec = ["sqlx/bit-vec"]
-decimal = ["sqlx/decimal"]
-bigdecimal = ["sqlx/bigdecimal"]
-bstr = ["sqlx/bstr"]
-git2 = ["sqlx/git2"]
-ipnetwork = ["sqlx/ipnetwork"]
-mac_address = ["sqlx/mac_address"]
-migrate = ["sqlx/migrate"]
-offline = ["sqlx/offline"]
-tls = ["sqlx/tls"]
-
-runtime-actix = ["sqlx/runtime-actix"]
-runtime-actix-native-tls = ["sqlx/runtime-actix-native-tls"]
-runtime-actix-rustls = ["sqlx/runtime-actix-rustls"]
-runtime-async-std = ["sqlx/runtime-async-std"]
-runtime-async-std-native-tls = ["sqlx/runtime-async-std-native-tls"]
-runtime-async-std-rustls = ["sqlx/runtime-async-std-rustls"]
-runtime-tokio = ["sqlx/runtime-tokio"]
-runtime-tokio-native-tls = ["sqlx/runtime-tokio-native-tls"]
-runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]
-
-#all = ["sqlx/all"]
-#all-types = ["sqlx/all-types"]
-#all-databases = ["sqlx/all-databases"]
-#any = ["sqlx/any"]
-
-[dependencies]
-log = "0.4.14"
-anyhow = "1.0.58"
-async-trait = "0.1.56"
-once_cell = "1.12.0"
+[workspace.dependencies]
+log = "0.4.17"
+anyhow = "1.0.66"
+async-std = "1.12.0"
+async-trait = "0.1.59"
+once_cell = "1.16.0"
 sql-builder = "3.1.1"
-sqlx = "0.6.0"
-serde = { version = "1.0.137", optional = true }
-serde_derive = { version = "1.0.137", optional = true }
+sqlx = "0.6.2"
+serde = "1.0.149"
+serde_derive = "1.0.149"
 
-[dev-dependencies]
-futures-await-test = "0.3.0"
-
-[workspace]
-members = [
-    "cherry-derive",
-    "example"
-]
+proc-macro2 = "1.0.47"
+syn = "1.0.105"
+quote = "1.0.21"
+heck = "0.3.3"

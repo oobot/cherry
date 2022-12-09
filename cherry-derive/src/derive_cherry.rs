@@ -19,7 +19,7 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
     ).collect::<Vec<String>>();
 
     let fields = fields_vec.iter().map(|s|
-        format!(r#" "{}", "#, s)
+        format!(r#" ("{0}", "{0}"), "#, s)
     ).collect::<String>();
 
     let arguments = fields_vec.iter().map(|s|
@@ -35,18 +35,37 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
             fn table() -> &'static str {
                 #table
             }
-            fn columns() -> Vec<&'static str> {
+            fn columns() -> Vec<(&'static str, &'static str)> {
                 vec![ [fields] ]
             }
 
-            fn arguments<'a>(&'a self, arguments: &mut cherry::types::Arguments<'a>) {
-                use cherry::sqlx::Arguments as OtherArguments;
-                [arguments]
+            fn arguments<'a>(&'a self, arguments: &mut cherry::AnyArguments<'a>) {
+                use cherry::sqlx::Arguments;
+                match arguments {
+                    #[cfg(feature = "postgres")]
+                    cherry::AnyArguments::Postgres(arguments, _) => { [arguments] }
+                    #[cfg(feature = "mysql")]
+                    cherry::AnyArguments::MySql(arguments, _) => { [arguments] }
+                    #[cfg(feature = "sqlite")]
+                    cherry::AnyArguments::Sqlite(arguments) => { [arguments] }
+                    #[cfg(feature = "mssql")]
+                    cherry::AnyArguments::Mssql(arguments, _) => { [arguments] }
+                }
             }
 
-            fn from_row(row: &cherry::types::Row) -> Result<Self, cherry::error::Error> {
-                use cherry::sqlx::Row as OtherRow;
-                Ok( Self { [from_row] } )
+            fn from_row(row: &cherry::AnyRow) -> Result<Self, cherry::Error> {
+                use cherry::sqlx::Row;
+                let v = match row {
+                    #[cfg(feature = "postgres")]
+                    cherry::AnyRow::Postgres(row) => { Self { [from_row] } }
+                    #[cfg(feature = "mysql")]
+                    cherry::AnyRow::MySql(row) => { Self { [from_row] } }
+                    #[cfg(feature = "sqlite")]
+                    cherry::AnyRow::Sqlite(row) => { Self { [from_row] } }
+                    #[cfg(feature = "mssql")]
+                    cherry::AnyRow::Mssql(row) => { Self { [from_row] } }
+                };
+                Ok(v)
             }
         }
     );
