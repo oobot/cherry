@@ -27,13 +27,13 @@ serde = { workspace = true, optional = true }
 serde_derive = { workspace = true, optional = true }
 
 [dev-dependencies]
-sqlx = { workspace = true, features = ["runtime-async-std-rustls"]}
-#sqlx = { workspace = true, features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]}
+async-std = { workspace = true, features = ["attributes"] }
+sqlx = { workspace = true, features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]}
 cherry-derive = { package = "cherry-derive", path = "../cherry-derive" }
 
 
 [features]
-default = ["sqlx/default"]
+default = ["sqlx/default", "any", "sqlite"]
 macros = ["sqlx/sqlx-macros"]
 migrate = ["sqlx/migrate"]
 

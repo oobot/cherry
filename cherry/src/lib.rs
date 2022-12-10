@@ -1,9 +1,11 @@
-// #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
+#![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
 
 pub use {
     cherry::Cherry,
-    adapter::AnyArguments,
-    adapter::AnyRow,
+    /*adapter::*,
+    database::*,
+    pool::*,
+    arguments::*,*/
     anyhow::Error,
     // connection::PoolConfig,
     // datasource::DataSource,
@@ -11,7 +13,12 @@ pub use {
 };
 
 pub(crate) mod cherry;
-mod adapter;
+pub(crate) mod adapter;
+pub(crate) mod database;
+pub(crate) mod pool;
+pub(crate) mod arguments;
+pub(crate) mod crud;
+
 // pub(crate) mod connection;
 // pub(crate) mod query;
 // pub(crate) mod datasource;
