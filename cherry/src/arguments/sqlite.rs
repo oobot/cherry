@@ -1,4 +1,4 @@
-use sqlx::{Encode, Sqlite, Type};
+use sqlx::{Encode, IntoArguments, Sqlite, Type};
 use crate::arguments::Arguments;
 use crate::sqlx::database::HasArguments;
 
@@ -23,11 +23,13 @@ impl<'a> Arguments<'a, Sqlite> for SqliteArguments<'a> {
         Self::new()
     }
 
-    fn raw(self) -> <Sqlite as HasArguments<'a>>::Arguments {
-        self.0
-    }
-
     fn add<T>(&mut self, v: T) where T: Encode<'a, Sqlite> + Type<Sqlite> + Send + 'a {
         self.add(v);
+    }
+}
+
+impl<'a> IntoArguments<'a, Sqlite> for SqliteArguments<'a> {
+    fn into_arguments(self) -> <Sqlite as HasArguments<'a>>::Arguments {
+        self.0
     }
 }

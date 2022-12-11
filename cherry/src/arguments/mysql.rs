@@ -1,4 +1,4 @@
-use sqlx::{Encode, MySql, Type};
+use sqlx::{Encode, IntoArguments, MySql, Type};
 
 use crate::arguments::Arguments;
 use crate::sqlx::database::HasArguments;
@@ -23,11 +23,15 @@ impl<'a> Arguments<'a, MySql> for MySqlArguments {
         Self::new()
     }
 
-    fn raw(self) -> <MySql as HasArguments<'a>>::Arguments {
-        self.0
-    }
-
     fn add<T>(&mut self, v: T) where T: Encode<'a, MySql> + Type<MySql> + Send + 'a {
         self.add(v);
     }
+}
+
+impl<'a> IntoArguments<'a, MySql> for MySqlArguments {
+
+    fn into_arguments(self) -> <MySql as HasArguments<'a>>::Arguments {
+        self.0
+    }
+
 }
