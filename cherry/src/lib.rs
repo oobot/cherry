@@ -2,8 +2,8 @@
 
 pub use {
     cherry::Cherry,
-    /*adapter::*,
-    database::*,
+    adapter::*,
+    /*database::*,
     pool::*,
     arguments::*,*/
     anyhow::Error,
@@ -12,12 +12,13 @@ pub use {
     // types::Transaction,
 };
 
-pub(crate) mod cherry;
-pub(crate) mod adapter;
-pub(crate) mod database;
-pub(crate) mod pool;
-pub(crate) mod arguments;
-pub(crate) mod crud;
+pub mod cherry;
+pub mod adapter;
+pub mod database;
+pub mod pool;
+pub mod arguments;
+pub mod row;
+pub mod crud;
 
 // pub(crate) mod connection;
 // pub(crate) mod query;

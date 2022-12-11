@@ -10,7 +10,7 @@ impl MySqlArguments {
         Self(sqlx::mysql::MySqlArguments::default())
     }
 
-    pub fn add<'a, T: Encode<'a, MySql> + Type<MySql>>(&mut self, v: T) -> &mut Self {
+    pub fn add<'a, T: Encode<'a, MySql> + Type<MySql> + Send + 'a>(&mut self, v: T) -> &mut Self {
         sqlx::Arguments::add(&mut self.0, v);
         // use sqlx::Arguments;
         // self.0.add(v);

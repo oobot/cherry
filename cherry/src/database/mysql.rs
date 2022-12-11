@@ -1,7 +1,6 @@
 use sqlx::{Encode, Type};
 use sqlx::MySql;
 
-use crate::AboutDatabase;
 use crate::arguments::mysql::MySqlArguments;
 use crate::database::AboutDatabase;
 

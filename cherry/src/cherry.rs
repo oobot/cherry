@@ -1,29 +1,31 @@
 use crate::adapter::{AnyArguments, AnyRow};
 
-pub trait Cherry: Sized + Send + Unpin {
+pub trait Cherry<DB: crate::sqlx::Database>: Sized + Send + Unpin {
 
     fn table() -> &'static str;
 
     // field name -> column name
     fn columns() -> Vec<(&'static str, &'static str)>;
 
-    fn arguments<'a>(&'a self, arguments: &mut AnyArguments<'a>);
+    // fn arguments<'a>(&'a self, arguments: &mut AnyArguments<'a>);
 
-    fn from_row(row: &AnyRow) -> Result<Self, crate::Error>;
+    fn from_row(row: &<DB as sqlx::Database>::Row) -> Result<Self, crate::Error>;
 
     // CRUD
 }
 
 #[cfg(test)]
 mod tests {
+    use anyhow::Error;
     use crate::adapter::{AnyArguments, AnyRow};
     use crate::Cherry;
+    use crate::sqlx::{Database, Sqlite};
 
     struct Example {
         id: u32,
     }
 
-    impl Cherry for Example {
+    impl Cherry<crate::sqlx::Sqlite> for Example {
         fn table() -> &'static str {
             todo!()
         }
@@ -32,31 +34,20 @@ mod tests {
             todo!()
         }
 
-        fn arguments<'a>(&'a self, arguments: &mut AnyArguments<'a>) {
-            match arguments {
-                #[cfg(feature = "postgres")]
-                AnyArguments::Postgres(arguments, _) => { arguments;}
-                #[cfg(feature = "mysql")]
-                AnyArguments::MySql(arguments, _) => { arguments; }
-                #[cfg(feature = "sqlite")]
-                AnyArguments::Sqlite(arguments) => { arguments; }
-                #[cfg(feature = "mssql")]
-                AnyArguments::Mssql(arguments, _) => { arguments; }
-            }
-        }
+        // fn arguments<'a>(&'a self, arguments: &mut AnyArguments<'a>) {
+        //     match arguments {
+        //         #[cfg(feature = "postgres")]
+        //         AnyArguments::Postgres(arguments, _) => { arguments;}
+        //         #[cfg(feature = "mysql")]
+        //         AnyArguments::MySql(arguments, _) => { arguments; }
+        //         #[cfg(feature = "sqlite")]
+        //         AnyArguments::Sqlite(arguments) => { arguments; }
+        //         #[cfg(feature = "mssql")]
+        //         AnyArguments::Mssql(arguments, _) => { arguments; }
+        //     }
+        // }
 
-        fn from_row(row: &AnyRow) -> Result<Self, crate::Error> {
-            // match row {
-            //     #[cfg(feature = "postgres")]
-            //     AnyRow::Postgres(row) => { }
-            //     #[cfg(feature = "mysql")]
-            //     AnyRow::MySql(row) => {}
-            //     #[cfg(feature = "sqlite")]
-            //     AnyRow::Sqlite(row) => {}
-            //     #[cfg(feature = "mssql")]
-            //     AnyRow::Mssql(row) => {}
-            // }
-
+        fn from_row(row: &<Sqlite as Database>::Row) -> Result<Self, Error> {
             todo!()
         }
     }

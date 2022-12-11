@@ -8,10 +8,10 @@
 // pub use mssql::*;
 
 #[cfg(feature = "postgres")]
-pub(crate) mod postgres;
+pub mod postgres;
 #[cfg(feature = "mysql")]
-pub(crate) mod mysql;
+pub mod mysql;
 #[cfg(feature = "sqlite")]
-pub(crate) mod sqlite;
+pub mod sqlite;
 // #[cfg(feature = "mssql")]
 // mod mssql;

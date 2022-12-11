@@ -2,7 +2,7 @@ use anyhow::Error;
 use sqlx::{Pool, Sqlite};
 
 pub struct SqlitePool {
-    pub(crate) inner: Pool<Sqlite>,
+    pub inner: Pool<Sqlite>,
 }
 
 impl SqlitePool {

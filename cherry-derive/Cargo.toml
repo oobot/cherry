@@ -9,8 +9,14 @@ keywords.workspace = true
 description.workspace =true
 
 [lib]
-#name = "cherry_derive"
+name = "cherry_derive"
 proc-macro = true
+
+[features]
+sqlite = []
+mysql = []
+postgres = []
+mssql = []
 
 [dependencies]
 proc-macro2.workspace = true

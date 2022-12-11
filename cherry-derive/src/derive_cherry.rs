@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use heck::SnakeCase;
@@ -7,80 +8,97 @@ use quote::quote;
 use syn::{Data, Ident, Lit, Meta, NestedMeta, punctuated::Punctuated};
 
 pub fn derive(ast: syn::DeriveInput) -> TokenStream {
+    let ident = &ast.ident;
+    let mut attrs = parse_attrs(&ast);
+    let table = attrs.remove("table").unwrap_or(ident.to_string().to_snake_case());
+    let db_values = attrs.remove("database").unwrap_or_default();
+    let mut tokens: Vec<String> = vec![];
+
+    // let dbs = get_databases(&db_values);
+    // panic!("{:?}", dbs);
+
+    for db_type in get_databases(&db_values) {
+        let token = quote!(
+            impl cherry::Cherry<[db_type]> for #ident {
+                fn table() -> &'static str {
+                    #table
+                }
+                fn columns() -> Vec<(&'static str, &'static str)> {
+                    vec![ [fields] ]
+                }
+
+
+
+                fn from_row(row: &<[db_type] as cherry::sqlx::Database>::Row) -> Result<Self, cherry::Error> {
+                    use cherry::sqlx::Row;
+                    Ok( Self { [from_row] } )
+                }
+            }
+        );
+        // let new = replace(token.to_string(), db_type, &ast);
+        // panic!("{}", new);
+        tokens.push(replace(token.to_string(), db_type, &ast));
+    }
+
+    TokenStream::from_str(tokens.join("\n").as_str())
+        .expect("Parse token stream failed")
+}
+
+fn replace(token: String, db_type: String, ast: &syn::DeriveInput) -> String {
     let fields = match &ast.data {
         Data::Struct(ref s) => &s.fields,
-        _ => panic!("Cherry only impl for struct."),
+        _ => panic!("Cherry only allow impl for struct."),
     };
-    let ident = &ast.ident;
-    let table = parse_attrs(&ast);
 
-    let fields_vec = fields.iter().filter_map(|field|
+    let fields_str = fields.iter().filter_map(|field|
         field.ident.as_ref().map(|ident| ident.to_string())
     ).collect::<Vec<String>>();
 
-    let fields = fields_vec.iter().map(|s|
+    let fields = fields_str.iter().map(|s|
         format!(r#" ("{0}", "{0}"), "#, s)
     ).collect::<String>();
 
-    let arguments = fields_vec.iter().map(|s|
+    let arguments = fields_str.iter().map(|s|
         format!(r#" arguments.add(&self.{}); "#, s)
     ).collect::<String>();
 
-    let from_row = fields_vec.iter().map(|s|
+    let from_row = fields_str.iter().map(|s|
         format!(r#" {0}: row.try_get("{0}")?, "#, s)
     ).collect::<String>();
 
-    let token = quote!(
-        impl cherry::Cherry for #ident {
-            fn table() -> &'static str {
-                #table
-            }
-            fn columns() -> Vec<(&'static str, &'static str)> {
-                vec![ [fields] ]
-            }
-
-            fn arguments<'a>(&'a self, arguments: &mut cherry::AnyArguments<'a>) {
-                use cherry::sqlx::Arguments;
-                match arguments {
-                    #[cfg(feature = "postgres")]
-                    cherry::AnyArguments::Postgres(arguments, _) => { [arguments] }
-                    #[cfg(feature = "mysql")]
-                    cherry::AnyArguments::MySql(arguments, _) => { [arguments] }
-                    #[cfg(feature = "sqlite")]
-                    cherry::AnyArguments::Sqlite(arguments) => { [arguments] }
-                    #[cfg(feature = "mssql")]
-                    cherry::AnyArguments::Mssql(arguments, _) => { [arguments] }
-                }
-            }
-
-            fn from_row(row: &cherry::AnyRow) -> Result<Self, cherry::Error> {
-                use cherry::sqlx::Row;
-                let v = match row {
-                    #[cfg(feature = "postgres")]
-                    cherry::AnyRow::Postgres(row) => { Self { [from_row] } }
-                    #[cfg(feature = "mysql")]
-                    cherry::AnyRow::MySql(row) => { Self { [from_row] } }
-                    #[cfg(feature = "sqlite")]
-                    cherry::AnyRow::Sqlite(row) => { Self { [from_row] } }
-                    #[cfg(feature = "mssql")]
-                    cherry::AnyRow::Mssql(row) => { Self { [from_row] } }
-                };
-                Ok(v)
-            }
-        }
-    );
-
-    let token = token.to_string()
+    token
+        .replace("[db_type]", db_type.as_str())
         .replace("[fields]", fields.as_str())
         .replace("[arguments]", arguments.as_str())
-        .replace("[from_row]", from_row.as_str());
-
-    TokenStream::from_str(token.as_str()).expect("Parse token stream failed")
+        .replace("[from_row]", from_row.as_str())
 }
 
-// If attribute exists, should set `table` value, and only `table` allowed.
-fn parse_attrs(ast: &syn::DeriveInput) -> String {
-    let value = ast.attrs.iter().find_map(|attr| {
+fn get_databases(prop: &str) -> Vec<String> {
+    let mut values = prop.split(',')
+        .filter(|v| !v.trim().is_empty())
+        .map(|v| v.trim().to_string())
+        .collect::<Vec<String>>();
+
+    if values.is_empty() {
+        #[cfg(feature = "sqlite")] values.push("sqlite".into());
+        #[cfg(feature = "mysql")] values.push("mysql".into());
+        #[cfg(feature = "postgres")] values.push("postgres".into());
+        #[cfg(feature = "mssql")] values.push("mssql".into());
+    }
+
+    values.into_iter().map(|v| {
+        match v.as_str() {
+            "sqlite" => "cherry::sqlx::Sqlite".to_string(),
+            "mysql" => "cherry::sqlx::MySql".to_string(),
+            "postgres" => "cherry::sqlx::Postgres".to_string(),
+            "mssql" => "cherry::sqlx::Mssql".to_string(),
+            _ => panic!("Unknown database `{}`", v),
+        }
+    }).collect()
+}
+
+fn parse_attrs(ast: &syn::DeriveInput) -> HashMap<String, String> {
+    ast.attrs.iter().find_map(|attr| {
         match attr.parse_meta().unwrap() {
             Meta::List(meta_list) => Some(meta_list),
             _ => None
@@ -88,31 +106,39 @@ fn parse_attrs(ast: &syn::DeriveInput) -> String {
     }).filter(|meta_list| {
         meta_list.path.get_ident() == Some(&Ident::new("cherry", Span::call_site()))
     }).map(|meta_list| {
-        extract_attrs(&meta_list.nested)
-    });
+        // extract_attrs(&meta_list.nested)
+        props(&meta_list.nested)
+    }).unwrap_or_default()
 
-    match value {
-        Some(Some(table)) => table,
-        Some(_) => panic!("Unknown attribute."),
-        // The `cherry` attribute not exists. Pick the default name.
-        _ => ast.ident.to_string().to_snake_case(),
-    }
-
-    // ast.attrs.iter().find_map(|attr| {
-    //     if let Meta::List(meta_list) = attr.parse_meta().unwrap() {
-    //         if meta_list.path.get_ident() ==
-    //             Some(&Ident::new("cherry", Span::call_site())) {
-    //
-    //             let table = extract_attrs(&meta_list.nested)
-    //                 .unwrap_or((&ast.ident.to_string().to_snake_case()).clone());
-    //
-    //             return Some(table.clone());
-    //         }
-    //     }
-    //     None
-    // }).expect(msg.as_str())
+    // match value {
+    //     Some(Some(table)) => table,
+    //     Some(_) => panic!("Unknown attribute."),
+    //     // The `cherry` attribute not exists. Pick the default name.
+    //     _ => ast.ident.to_string().to_snake_case(),
+    // }
 }
 
+fn props<P>(props: &Punctuated<NestedMeta, P>) -> HashMap<String, String> {
+    props.iter().filter_map(|v| match v {
+        NestedMeta::Meta(Meta::NameValue(value)) => Some(value),
+        _ => None
+    }).map(|v| {
+        let key = v.path.get_ident().map(|ident| ident.to_string());
+        let value = match &v.lit {
+            Lit::Str(s) => Some(s.value()),
+            _ => None,
+        };
+        (key, value)
+    }).filter_map(|(k, v)|
+        match k.is_some() && v.is_some() {
+            true => Some((k.unwrap(), v.unwrap())),
+            _ => None,
+        }
+    ).collect()
+}
+
+
+/*
 fn extract_attrs<P>(props: &Punctuated<NestedMeta, P>) -> Option<String> {
     if props.len() > 1 {
         return None;
@@ -128,6 +154,7 @@ fn extract_attrs<P>(props: &Punctuated<NestedMeta, P>) -> Option<String> {
         _ => None
     }
 }
+*/
 
 /*
 fn extract_attrs<P>(props: &Punctuated<NestedMeta, P>) -> (Option<String>, Option<String>) {
