@@ -35,8 +35,8 @@ async fn test_select() {
         .execute(&pool.inner).await.unwrap();
     assert_eq!(1, a.rows_affected());
 
-
-    let user: Option<User> = Select::new().by_id(100).one(&pool.inner).await.unwrap();
+    // let mut sql = String::new();
+    let user: Option<User> = Select::new(&mut String::new()).by_id(100).one(&pool.inner).await.unwrap();
     assert!(user.is_some());
     assert_eq!(100, user.unwrap().id);
 }
