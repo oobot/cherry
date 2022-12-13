@@ -6,10 +6,13 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 
 use crate::arguments::Arguments;
 use crate::Cherry;
+use crate::crud::end::End;
 use crate::crud::provider::{EndProvider, WhereProvider};
 use crate::crud::r#where::Where;
 use crate::database::AboutDatabase;
 use crate::statement::end::EndStatement;
+use crate::statement::end::section::EndSection;
+use crate::statement::r#where::condition::Condition;
 use crate::statement::r#where::WhereStatement;
 use crate::statement::select::SelectStatement;
 
@@ -66,9 +69,22 @@ impl<'a, C, DB, A> WhereProvider<'a, DB> for Select<'a, C, DB, A>
         self.arguments.add(v);
     }
 
-    fn where_statement(&mut self) -> &mut WhereStatement<'a> {
-        &mut self.statement.r#where
+    fn make_wrap(&mut self) {
+        self.statement.r#where.make_temp();
     }
+
+    fn take_wrap(&mut self) -> Vec<Condition<'a>> {
+        self.statement.r#where.take_temp()
+    }
+
+    fn add_statement(&mut self, c: Condition<'a>) {
+        self.statement.r#where.add(c);
+    }
+
+
+    // fn where_statement(&mut self) -> &mut WhereStatement<'a> {
+    //     &mut self.statement.r#where
+    // }
 }
 
 impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
@@ -80,8 +96,8 @@ impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
         self.arguments.add(v);
     }
 
-    fn end_statement(&mut self) -> &mut EndStatement<'a> {
-        &mut self.statement.end
+    fn add_section(&mut self, section: EndSection<'a>) {
+        self.statement.end.add(section);
     }
 }
 
@@ -92,6 +108,12 @@ impl<'a, C, DB, A> Where<'a, DB> for Select<'a, C, DB, A>
 
 }
 
+impl<'a, C, DB, A> End<'a, DB> for Select<'a, C, DB, A>
+    where C: Cherry<DB>,
+          DB: Database,
+          A: Arguments<'a, DB> + Send + 'a {
+
+}
 
 #[cfg(test)]
 mod tests {

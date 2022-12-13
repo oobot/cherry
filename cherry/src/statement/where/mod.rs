@@ -2,7 +2,6 @@ use crate::statement::r#where::condition::Condition;
 
 pub mod condition;
 
-
 pub struct WhereStatement<'a> {
     conditions: Vec<Condition<'a>>,
     temp_conditions: Option<Vec<Condition<'a>>>,

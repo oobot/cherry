@@ -7,19 +7,19 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
 
     // wrap conditions
     fn and<F>(mut self, mut f: F) -> Self where F: FnMut(&mut Self) -> &mut Self {
-        self.where_statement().make_temp();
+        self.make_wrap();
         f(&mut self); // closure will add to temp conditions
-        let conditions = self.where_statement().take_temp();
-        self.where_statement().add(Condition::And(conditions));
+        let conditions = self.take_wrap();
+        self.add_statement(Condition::And(conditions));
         self
     }
 
     // wrap conditions
     fn or<F>(mut self, mut f: F) -> Self where F: FnMut(&mut Self) -> &mut Self {
-        self.where_statement().make_temp();
+        self.make_wrap();
         f(&mut self); // closure will add to temp conditions
-        let conditions = self.where_statement().take_temp();
-        self.where_statement().add(Condition::Or(conditions));
+        let conditions = self.take_wrap();
+        self.add_statement(Condition::Or(conditions));
         self
     }
 
@@ -32,7 +32,7 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
     fn and_eq_ref<V>(&mut self, c: &'a str, v: V) -> &mut Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
-        self.where_statement().add(Condition::AndEq(c));
+        self.add_statement(Condition::AndEq(c));
         self
     }
 
@@ -45,7 +45,7 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
     fn or_eq_ref<V>(&mut self, c: &'a str, v: V) -> &mut Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
-        self.where_statement().add(Condition::OrEq(c));
+        self.add_statement(Condition::OrEq(c));
         self
     }
 
