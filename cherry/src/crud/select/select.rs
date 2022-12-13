@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+use std::mem;
 
 use anyhow::Error;
 use sqlx::{Database, Encode, Executor, IntoArguments, Type};
@@ -6,10 +7,15 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 use crate::arguments::Arguments;
 use crate::Cherry;
 use crate::database::AboutDatabase;
+use crate::sql::condition::{Condition, Ending};
+use crate::sql::filter::Filter;
+use crate::sql::filter_statement::FilterStatement;
+use crate::sql::select_statement::SelectStatement;
 
 pub struct Select<'a, C, DB, A> {
     arguments: A,
     sql: &'a mut String,
+    statement: SelectStatement<'a>,
     _a: PhantomData<C>,
     _b: PhantomData<&'a DB>,
 }
@@ -24,9 +30,11 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
     /// `sqlx::query_with(sql, arguments)` need `sql` live as long as `arguments`,
     /// so the empty sql container created by the caller.
     pub fn new(sql: &'a mut String) -> Self {
+        assert!(sql.is_empty());
         Self {
             arguments: DB::arguments(),
             sql,
+            statement: SelectStatement::from(<C as Cherry<DB>>::table()),
             _a: Default::default(),
             _b: Default::default(),
         }
@@ -55,6 +63,22 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
     }
 
 }
+
+impl<'a, C, DB, A> Filter<'a, DB> for Select<'a, C, DB, A>
+    where C: Cherry<DB>,
+          DB: Database,
+          A: Arguments<'a, DB> + Send + 'a {
+
+    fn add_value<V>(&mut self, v: V) where V: Encode<'a, DB> + Type<DB> + Send + 'a {
+        self.arguments.add(v);
+    }
+
+    fn filter(&mut self) -> &mut FilterStatement<'a> {
+        &mut self.statement.filter
+    }
+}
+
+
 
 #[cfg(test)]
 mod tests {

@@ -1,2 +1,2 @@
-pub(crate) mod insert;
+pub mod insert;
 pub mod select;
