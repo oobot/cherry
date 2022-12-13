@@ -13,10 +13,15 @@ impl<'a> SelectStatement<'a> {
     }
 
     pub fn sql(&self) -> String {
-
-        todo!()
+        let columns = match self.columns.is_empty() {
+            true => "*".to_string(),
+            _ => self.columns.join(", "),
+        };
+        match self.filter.as_statement() {
+            Some(v) => format!("SELECT {} FROM {} WHERE {}", columns, self.table, v),
+            None => format!("SELECT {} FROM {}", columns, self.table),
+        }
     }
-
 
 }
 

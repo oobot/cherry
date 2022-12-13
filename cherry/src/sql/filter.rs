@@ -15,7 +15,7 @@ pub trait Filter<'a, DB>: Sized where DB: Database {
         // closure will add to temp conditions
         f(&mut self);
         let conditions = self.filter().take_temp();
-        self.filter().add_condition(Condition::And(conditions));
+        self.filter().add(Condition::And(conditions));
         self
     }
 
@@ -23,7 +23,7 @@ pub trait Filter<'a, DB>: Sized where DB: Database {
         self.filter().make_temp();
         f(&mut self); // closure will add to temp conditions
         let conditions = self.filter().take_temp();
-        self.filter().add_condition(Condition::Or(conditions));
+        self.filter().add(Condition::Or(conditions));
         self
     }
 
@@ -36,7 +36,7 @@ pub trait Filter<'a, DB>: Sized where DB: Database {
     fn and_eq_ref<V>(&mut self, c: &'a str, v: V) -> &mut Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
-        self.filter().add_condition(Condition::AndEq(c));
+        self.filter().add(Condition::AndEq(c));
         self
     }
 
@@ -49,7 +49,7 @@ pub trait Filter<'a, DB>: Sized where DB: Database {
     fn or_eq_ref<V>(&mut self, c: &'a str, v: V) -> &mut Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
-        self.filter().add_condition(Condition::OrEq(c));
+        self.filter().add(Condition::OrEq(c));
         self
     }
 

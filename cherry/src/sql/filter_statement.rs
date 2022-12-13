@@ -16,7 +16,7 @@ impl<'a> FilterStatement<'a> {
         }
     }
 
-    pub fn add_condition(&mut self, condition: Condition<'a>) {
+    pub fn add(&mut self, condition: Condition<'a>) {
         match &mut self.temp_conditions {
             Some(vec) => vec.push(condition),
             _ => self.conditions.push(condition),
@@ -31,12 +31,22 @@ impl<'a> FilterStatement<'a> {
         self.temp_conditions.take().unwrap_or_default()
     }
 
-    pub fn add_ending(&mut self, ending: Ending<'a>) {
+    pub fn end_with(&mut self, ending: Ending<'a>) {
         self.ending.push(ending);
     }
 
-    pub fn as_sql(&self) -> String {
-        todo!()
+    pub fn as_statement(&self) -> Option<String> {
+        let mut vec = Vec::with_capacity(2);
+        if !self.conditions.is_empty() {
+            vec.push(Condition::gen_all(&self.conditions));
+        }
+        if !self.ending.is_empty() {
+            vec.push(Ending::gen_all(&self.ending));
+        }
+        match vec.is_empty() {
+            true => None,
+            _ => Some(vec.join(" ")),
+        }
     }
 
 }

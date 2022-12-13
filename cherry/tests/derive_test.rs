@@ -4,6 +4,7 @@ use sqlx::sqlite::SqliteArguments;
 use cherry::Cherry;
 use cherry::crud::select::select::Select;
 use cherry::pool::sqlite::SqlitePool;
+use cherry::sql::filter::Filter;
 use cherry_derive::Cherry;
 
 #[derive(Cherry)]
@@ -35,8 +36,10 @@ async fn test_select() {
         .execute(&pool.inner).await.unwrap();
     assert_eq!(1, a.rows_affected());
 
-    // let mut sql = String::new();
-    let user: Option<User> = Select::new(&mut String::new()).by_id(100).one(&pool.inner).await.unwrap();
+    let user: Option<User> = Select::new(&mut String::new())
+        .and_eq("id", user.id)
+        .and_eq("name", user.name)
+        .one(&pool.inner).await.unwrap();
     assert!(user.is_some());
     assert_eq!(100, user.unwrap().id);
 }
