@@ -2,9 +2,9 @@ use sqlx::{Arguments, Executor, Sqlite};
 use sqlx::sqlite::SqliteArguments;
 
 use cherry::Cherry;
+use cherry::crud::r#where::Where;
 use cherry::crud::select::select::Select;
 use cherry::pool::sqlite::SqlitePool;
-use cherry::sql::filter::Filter;
 use cherry_derive::Cherry;
 
 #[derive(Cherry)]
@@ -40,6 +40,7 @@ async fn test_select() {
         .and_eq("id", user.id)
         .and_eq("name", user.name)
         .one(&pool.inner).await.unwrap();
+
     assert!(user.is_some());
     assert_eq!(100, user.unwrap().id);
 }

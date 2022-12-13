@@ -1,5 +1,4 @@
-use crate::sql::condition::Condition::*;
-use crate::sql::condition::Ending::*;
+use crate::statement::r#where::condition::Condition::*;
 
 pub enum Condition<'a> {
     And(Vec<Condition<'a>>),
@@ -87,30 +86,6 @@ impl<'a> Condition<'a> {
     }
 }
 
-pub enum Ending<'a> {
-    OrderBy(&'a str, bool), // column, asc or desc
-    Limit(),
-    Offset(),
-}
-
-impl<'a> Ending<'a> {
-    pub fn as_statement(&self) -> String {
-        match &self {
-            OrderBy(c, asc) => match *asc {
-                true => format!("ORDER BY {} ASC", c),
-                false => format!("ORDER BY {} DESC", c),
-            }
-            Limit() => "LIMIT ?".into(),
-            Offset() => "OFFSET ?".into(),
-        }
-    }
-
-    pub fn gen_all<'b>(vec: &'b[Ending<'b>]) -> String {
-        vec.iter().map(|v| v.as_statement()).collect::<Vec<String>>().join(" ")
-    }
-}
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -128,15 +103,4 @@ mod tests {
         assert_eq!(left, Condition::gen_all(&c));
     }
 
-    #[test]
-    fn test_ending_simple() {
-        let c  = vec![OrderBy("name", false)];
-        assert_eq!("ORDER BY name DESC", Ending::gen_all(&c));
-    }
-
-    #[test]
-    fn test_ending_more() {
-        let c  = vec![OrderBy("name", false), Limit(), Offset()];
-        assert_eq!("ORDER BY name DESC LIMIT ? OFFSET ?", Ending::gen_all(&c));
-    }
 }

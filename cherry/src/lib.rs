@@ -19,7 +19,7 @@ pub mod pool;
 pub mod arguments;
 pub mod row;
 pub mod crud;
-pub mod sql;
+pub mod statement;
 
 // pub(crate) mod connection;
 // pub(crate) mod query;
