@@ -4,18 +4,18 @@ pub mod r#where;
 pub mod end;
 
 #[derive(Copy, Clone)]
-pub enum QueryDatabase {
+pub enum TargetDatabase {
     Postgres,
     MySql,
     Sqlite,
 }
 
-impl QueryDatabase {
+impl TargetDatabase {
 
-    pub(crate) fn wrap_key(&self, word: &str) -> String {
+    pub(crate) fn wrap(&self, word: &str) -> String {
         match self {
-            QueryDatabase::MySql => format!("`{}`", word),
-            QueryDatabase::Postgres | QueryDatabase::Sqlite => format!(r#""{}""#, word),
+            TargetDatabase::MySql => format!("`{}`", word),
+            TargetDatabase::Postgres | TargetDatabase::Sqlite => format!(r#""{}""#, word),
         }
     }
 }

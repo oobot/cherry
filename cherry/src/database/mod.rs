@@ -9,7 +9,7 @@ pub use postgres::*;
 pub use sqlite::*;
 
 use crate::arguments::Arguments;
-use crate::query_builder::QueryDatabase;
+use crate::query_builder::TargetDatabase;
 
 // #[cfg(feature = "mssql")]
 // pub use mssql::*;
@@ -31,6 +31,6 @@ pub trait AboutDatabase<'a, DB, ARGS>
 
     fn arguments() -> ARGS;
 
-    fn database() -> QueryDatabase;
+    fn database() -> TargetDatabase;
 }
 

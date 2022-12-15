@@ -57,7 +57,6 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
 mod tests {
     use std::marker::PhantomData;
 
-    use crate::sql::select::SelectStatement;
     use crate::sqlx::Sqlite;
 
     use super::*;

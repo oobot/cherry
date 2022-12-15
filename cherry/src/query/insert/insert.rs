@@ -21,8 +21,7 @@ pub struct Insert<'a, T, DB, A> {
     sql: &'a mut String,
     query_builder: InsertBuilder<'a>,
     _a: PhantomData<DB>,
-    // _b: PhantomData<A>,
-    _c: PhantomData<T>,
+    _b: PhantomData<T>,
 }
 
 impl<'a, T, DB, A> Insert<'a, T, DB, A>
@@ -41,7 +40,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
                 T::columns().into_iter().map(|(_f, c)| c).collect(),
                 rows,
             ),
-            _a: Default::default(), _c: Default::default()
+            _a: Default::default(), _b: Default::default()
         }
     }
 

@@ -1,9 +1,9 @@
 use crate::query_builder::insert::Conflict::Ignore;
-use crate::query_builder::QueryDatabase;
+use crate::query_builder::TargetDatabase;
 use crate::query_builder::r#where::WhereStatement;
 
 pub struct InsertBuilder<'a> {
-    db: QueryDatabase,
+    db: TargetDatabase,
     table: &'a str,
     columns: Vec<&'a str>,
     rows: usize,
@@ -15,13 +15,13 @@ pub struct InsertBuilder<'a> {
 
 impl<'a> InsertBuilder<'a> {
 
-    pub fn from(db: QueryDatabase, table: &'a str, columns: Vec<&'a str>, rows: usize) -> Self {
+    pub fn from(db: TargetDatabase, table: &'a str, columns: Vec<&'a str>, rows: usize) -> Self {
         Self {
             db, table, columns, rows,
             conflict: Conflict::None,
             conflict_columns: vec![],
             update_columns: vec![],
-            r#where: WhereStatement::new(),
+            r#where: WhereStatement::from(db),
         }
     }
 

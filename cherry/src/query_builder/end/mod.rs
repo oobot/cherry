@@ -1,15 +1,17 @@
 use crate::query_builder::end::section::EndSection;
+use crate::query_builder::TargetDatabase;
 
 pub mod section;
 
 pub struct EndStatement<'a> {
+    db: TargetDatabase,
     sections: Vec<EndSection<'a>>
 }
 
 impl<'a> EndStatement<'a> {
 
-    pub fn new() -> Self {
-        Self { sections: vec![] }
+    pub fn from(db: TargetDatabase) -> Self {
+        Self { db, sections: vec![] }
     }
 
     pub fn add(&mut self, section: EndSection<'a>) {
