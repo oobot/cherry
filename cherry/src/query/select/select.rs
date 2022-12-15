@@ -38,7 +38,7 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
         Self {
             arguments: DB::arguments(),
             sql,
-            query_builder: SelectBuilder::from(DB::database(), <C as Cherry<DB>>::table()),
+            query_builder: SelectBuilder::from(DB::target(), <C as Cherry<DB>>::table()),
             _a: Default::default(),
             _b: Default::default(),
         }

@@ -3,7 +3,7 @@ use sqlx::MySql;
 
 use crate::arguments::mysql::MySqlArguments;
 use crate::database::AboutDatabase;
-use crate::query_builder::TargetDatabase;
+use crate::query_builder::TargetQuery;
 
 impl<'a> AboutDatabase<'a, MySql, MySqlArguments> for MySql {
 
@@ -11,7 +11,7 @@ impl<'a> AboutDatabase<'a, MySql, MySqlArguments> for MySql {
         MySqlArguments::new()
     }
 
-    fn database() -> TargetDatabase {
-        TargetDatabase::MySql
+    fn target() -> TargetQuery {
+        TargetQuery::MySql
     }
 }

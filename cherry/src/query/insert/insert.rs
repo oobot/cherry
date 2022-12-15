@@ -35,7 +35,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
         Self {
             data, arguments: DB::arguments(), sql,
             query_builder: InsertBuilder::from(
-                DB::database(),
+                DB::target(),
                 T::table(),
                 T::columns().into_iter().map(|(_f, c)| c).collect(),
                 rows,
@@ -57,35 +57,27 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
         self
     }
 
-    #[cfg(any(feature = "mysql", feature = "postgres"))]
     pub fn on_conflict_update(mut self) -> Self {
         self.query_builder.conflict(Conflict::Update);
         self
     }
 
-    #[cfg(any(feature = "mysql", feature = "sqlite"))]
+    #[cfg(any(feature = "sqlite", feature = "mysql"))]
     pub fn on_conflict_replace(mut self) -> Self {
         self.query_builder.conflict(Conflict::Replace);
         self
     }
 
-    #[cfg(feature = "postgres")]
+    #[cfg(any(feature = "sqlite", feature = "postgres"))]
     pub fn conflict_columns(mut self, columns: &'a [&'a str]) -> Self {
         self.query_builder.add_conflict_columns(columns);
         self
     }
 
-    #[cfg(any(feature = "mysql", feature = "postgres"))]
     pub fn update_columns(mut self, columns: &'a [&'a str]) -> Self {
-        self.query_builder.add_conflict_columns(columns);
+        self.query_builder.add_update_columns(columns);
         self
     }
-
-    // #[cfg(any(feature = "mysql", feature = "postgres"))]
-    // pub fn update_value<V>(mut self, c: &'a str, v: V)
-    //     where V: Encode<'a, DB> + Type<DB> + Send + 'a {
-    //
-    // }
 
     pub async fn execute<E>(mut self, e: E) -> Result<DB::QueryResult, Error>
         where E: Executor<'a, Database = DB> {

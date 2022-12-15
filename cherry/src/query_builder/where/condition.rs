@@ -1,4 +1,4 @@
-use crate::query_builder::TargetDatabase;
+use crate::query_builder::TargetQuery;
 use crate::query_builder::r#where::condition::Condition::*;
 
 pub enum Condition<'a> {
@@ -33,7 +33,7 @@ pub enum Condition<'a> {
 }
 
 impl<'a> Condition<'a> {
-    pub fn as_statement(&self, db: TargetDatabase) -> String {
+    pub fn as_statement(&self, db: TargetQuery) -> String {
         match &self {
             And(v) => format!("({})", Self::gen_all(v, db)),
             Or(v) => format!("({})", Self::gen_all(v, db)),
@@ -60,7 +60,7 @@ impl<'a> Condition<'a> {
         }
     }
 
-    pub fn gen_all<'b>(vec: &'b [Condition<'b>], db: TargetDatabase) -> String {
+    pub fn gen_all<'b>(vec: &'b [Condition<'b>], db: TargetQuery) -> String {
         vec.iter().enumerate().map(|(i, c)| {
             match i {
                 0 => c.as_statement(db),
@@ -94,14 +94,14 @@ mod tests {
     #[test]
     fn test_condition_simple() {
         let c = vec![AndEq("id")];
-        assert_eq!(r#""id" = ?"#, Condition::gen_all(&c, TargetDatabase::Sqlite));
+        assert_eq!(r#""id" = ?"#, Condition::gen_all(&c, TargetQuery::Sqlite));
     }
 
     #[test]
     fn test_condition_more() {
         let c = vec![AndEq("id"), And(vec![AndEq("gender"), OrGe("iq")]), OrNotBetween("age")];
         let left = r#""id" = ? AND ("gender" = ? OR "iq" >= ?) OR "age" NOT BETWEEN ? AND ?"#;
-        assert_eq!(left, Condition::gen_all(&c, TargetDatabase::Sqlite));
+        assert_eq!(left, Condition::gen_all(&c, TargetQuery::Sqlite));
     }
 
 }

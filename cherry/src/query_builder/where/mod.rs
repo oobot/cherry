@@ -1,19 +1,19 @@
-use crate::query_builder::TargetDatabase;
+use crate::query_builder::TargetQuery;
 use crate::query_builder::r#where::condition::Condition;
 
 pub mod condition;
 
 pub struct WhereStatement<'a> {
-    db: TargetDatabase,
+    target: TargetQuery,
     conditions: Vec<Condition<'a>>,
     temp_conditions: Option<Vec<Condition<'a>>>,
 }
 
 impl<'a> WhereStatement<'a> {
 
-    pub fn from(db: TargetDatabase) -> Self {
+    pub fn from(target: TargetQuery) -> Self {
         Self {
-            db,
+            target,
             conditions: vec![],
             temp_conditions: None,
         }
@@ -37,7 +37,7 @@ impl<'a> WhereStatement<'a> {
     pub fn as_statement(&self) -> Option<String> {
         match self.conditions.is_empty() {
             true => None,
-            _ => Some(Condition::gen_all(&self.conditions, self.db))
+            _ => Some(Condition::gen_all(&self.conditions, self.target))
         }
     }
 
