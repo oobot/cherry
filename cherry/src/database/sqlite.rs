@@ -3,6 +3,7 @@ use sqlx::Sqlite;
 
 use crate::arguments::sqlite::SqliteArguments;
 use crate::database::AboutDatabase;
+use crate::query_builder::QueryDatabase;
 
 impl<'a> AboutDatabase<'a, Sqlite, SqliteArguments<'a>> for Sqlite {
 
@@ -10,7 +11,7 @@ impl<'a> AboutDatabase<'a, Sqlite, SqliteArguments<'a>> for Sqlite {
         SqliteArguments::new()
     }
 
-    // fn add<T>(&mut self, v: T) where T: Encode<'a, Sqlite> + Type<Sqlite> + Send + 'a {
-    //     self.add(v);
-    // }
+    fn database() -> QueryDatabase {
+        QueryDatabase::Sqlite
+    }
 }

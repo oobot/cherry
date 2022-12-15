@@ -9,6 +9,7 @@ pub use postgres::*;
 pub use sqlite::*;
 
 use crate::arguments::Arguments;
+use crate::query_builder::QueryDatabase;
 
 // #[cfg(feature = "mssql")]
 // pub use mssql::*;
@@ -30,16 +31,6 @@ pub trait AboutDatabase<'a, DB, ARGS>
 
     fn arguments() -> ARGS;
 
-    // fn add<T>(&mut self, v: T) where T: Encode<'a, DB> + Type<DB> + Send + 'a;
+    fn database() -> QueryDatabase;
 }
-
-/*pub trait AboutDatabase<'a, DB, ARGS>
-    where
-        DB: Database, // + HasArguments<'a>
-        ARGS: Arguments<'a, DB> + Sized + Send {
-
-    fn arguments() -> ARGS;
-
-    fn add<T>(&mut self, v: T) where T: Encode<'a, DB> + Type<DB> + Send + 'a;
-}*/
 

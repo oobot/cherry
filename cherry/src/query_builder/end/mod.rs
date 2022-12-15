@@ -1,4 +1,4 @@
-use crate::statement::end::section::EndSection;
+use crate::query_builder::end::section::EndSection;
 
 pub mod section;
 

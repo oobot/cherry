@@ -1,14 +1,14 @@
-use crate::statement::end::EndStatement;
-use crate::statement::r#where::WhereStatement;
+use crate::query_builder::end::EndStatement;
+use crate::query_builder::r#where::WhereStatement;
 
-pub struct SelectStatement<'a> {
+pub struct SelectBuilder<'a> {
     pub table: &'a str,
     pub columns: Vec<&'a str>,
     pub r#where: WhereStatement<'a>,
     pub end: EndStatement<'a>,
 }
 
-impl<'a> SelectStatement<'a> {
+impl<'a> SelectBuilder<'a> {
 
     pub fn from(table: &'a str) -> Self {
         Self { table, columns: vec![], r#where: WhereStatement::new(), end: EndStatement::new(), }

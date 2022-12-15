@@ -1,4 +1,4 @@
-use crate::statement::r#where::condition::Condition::*;
+use crate::query_builder::r#where::condition::Condition::*;
 
 pub enum Condition<'a> {
     And(Vec<Condition<'a>>),

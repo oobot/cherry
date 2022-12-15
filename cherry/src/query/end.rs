@@ -1,7 +1,7 @@
 use sqlx::{Database, Encode, Type};
 
-use crate::crud::provider::EndProvider;
-use crate::statement::end::section::EndSection;
+use crate::query::provider::EndProvider;
+use crate::query_builder::end::section::EndSection;
 
 pub trait End<'a, DB>: EndProvider<'a, DB> + Sized where DB: Database {
 

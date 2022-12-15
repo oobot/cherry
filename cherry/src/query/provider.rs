@@ -1,8 +1,8 @@
 use sqlx::{Database, Encode, Type};
 
-use crate::statement::end::EndStatement;
-use crate::statement::end::section::EndSection;
-use crate::statement::r#where::condition::Condition;
+use crate::query_builder::end::EndStatement;
+use crate::query_builder::end::section::EndSection;
+use crate::query_builder::r#where::condition::Condition;
 
 pub trait WhereProvider<'a, DB>: Sized where DB: Database {
 

@@ -2,8 +2,8 @@ use sqlx::{Arguments, Executor, Sqlite};
 use sqlx::sqlite::SqliteArguments;
 
 use cherry::Cherry;
-use cherry::crud::r#where::Where;
-use cherry::crud::select::select::Select;
+use cherry::query::r#where::Where;
+use cherry::query::select::select::Select;
 use cherry::pool::sqlite::SqlitePool;
 use cherry_derive::Cherry;
 

@@ -1,7 +1,7 @@
 use sqlx::{Database, Encode, Type};
 
-use crate::crud::provider::WhereProvider;
-use crate::statement::r#where::condition::Condition;
+use crate::query::provider::WhereProvider;
+use crate::query_builder::r#where::condition::Condition;
 
 pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
 

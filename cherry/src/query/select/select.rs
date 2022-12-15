@@ -6,20 +6,20 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 
 use crate::arguments::Arguments;
 use crate::Cherry;
-use crate::crud::end::End;
-use crate::crud::provider::{EndProvider, WhereProvider};
-use crate::crud::r#where::Where;
 use crate::database::AboutDatabase;
-use crate::statement::end::EndStatement;
-use crate::statement::end::section::EndSection;
-use crate::statement::r#where::condition::Condition;
-use crate::statement::r#where::WhereStatement;
-use crate::statement::select::SelectStatement;
+use crate::query::end::End;
+use crate::query::provider::{EndProvider, WhereProvider};
+use crate::query::r#where::Where;
+use crate::query_builder::end::EndStatement;
+use crate::query_builder::end::section::EndSection;
+use crate::query_builder::r#where::condition::Condition;
+use crate::query_builder::r#where::WhereStatement;
+use crate::query_builder::select::SelectBuilder;
 
 pub struct Select<'a, C, DB, A> {
     arguments: A,
     sql: &'a mut String,
-    statement: SelectStatement<'a>,
+    query_builder: SelectBuilder<'a>,
     _a: PhantomData<C>,
     _b: PhantomData<&'a DB>,
 }
@@ -38,7 +38,7 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
         Self {
             arguments: DB::arguments(),
             sql,
-            statement: SelectStatement::from(<C as Cherry<DB>>::table()),
+            query_builder: SelectBuilder::from(<C as Cherry<DB>>::table()),
             _a: Default::default(),
             _b: Default::default(),
         }
@@ -48,7 +48,7 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
         where 'a: 'e,
               A: 'e,
               E: Executor<'c, Database = DB> {
-        self.sql.push_str(&self.statement.sql());
+        self.sql.push_str(&self.query_builder.sql());
         let row = sqlx::query_with(self.sql.as_str(), self.arguments)
             .fetch_optional(e).await?;
         let c = match row {
@@ -70,21 +70,16 @@ impl<'a, C, DB, A> WhereProvider<'a, DB> for Select<'a, C, DB, A>
     }
 
     fn make_wrap(&mut self) {
-        self.statement.r#where.make_temp();
+        self.query_builder.r#where.make_temp();
     }
 
     fn take_wrap(&mut self) -> Vec<Condition<'a>> {
-        self.statement.r#where.take_temp()
+        self.query_builder.r#where.take_temp()
     }
 
     fn add_statement(&mut self, c: Condition<'a>) {
-        self.statement.r#where.add(c);
+        self.query_builder.r#where.add(c);
     }
-
-
-    // fn where_statement(&mut self) -> &mut WhereStatement<'a> {
-    //     &mut self.statement.r#where
-    // }
 }
 
 impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
@@ -97,7 +92,7 @@ impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
     }
 
     fn add_section(&mut self, section: EndSection<'a>) {
-        self.statement.end.add(section);
+        self.query_builder.end.add(section);
     }
 }
 
