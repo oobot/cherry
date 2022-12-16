@@ -19,6 +19,7 @@ impl MySqlArguments {
 }
 
 impl<'a> Arguments<'a, MySql> for MySqlArguments {
+
     fn new() -> Self {
         Self::new()
     }

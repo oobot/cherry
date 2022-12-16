@@ -12,14 +12,9 @@ use crate::query_builder::insert::{Conflict, InsertBuilder};
 use crate::query_builder::set_clause::SetSection;
 use crate::query_builder::where_clause::condition::Condition;
 
-enum Data<'a, T> {
-    One(&'a T),
-    Multiple(&'a [T])
-}
-
 pub struct Insert<'a, T, DB, A> {
-    data: Data<'a, T>,
     arguments: A,
+    rows_count: usize,
     sql: &'a mut String,
     query_builder: InsertBuilder<'a>,
     _a: PhantomData<DB>,
@@ -27,31 +22,39 @@ pub struct Insert<'a, T, DB, A> {
 }
 
 impl<'a, T, DB, A> Insert<'a, T, DB, A>
-    where T: Cherry<DB> + 'a,
+    where T: Cherry<'a, DB, A> + 'a,
           DB: Database + AboutDatabase<'a, DB, A>,
           A: Arguments<'a, DB> + IntoArguments<'a, DB> + Send +'a {
 
-    fn from(data: Data<'a, T>, sql: &'a mut String) -> Self {
+    pub fn from_one(v: &'a T, sql: &'a mut String) -> Self {
         assert!(sql.is_empty());
-        let rows = match &data { Data::One(_) => 1, Data::Multiple(v) => v.len(), };
+        let mut arguments = DB::arguments();
+        v.arguments(&mut arguments);
         Self {
-            data, arguments: DB::arguments(), sql,
-            query_builder: InsertBuilder::from(
-                DB::target(),
-                T::table(),
-                T::columns().into_iter().map(|(_f, c)| c).collect(),
-                rows,
-            ),
-            _a: Default::default(), _b: Default::default()
+            arguments, rows_count: 1, sql,
+            query_builder: Self::create_query_builder(1),
+            _a: Default::default(), _b: Default::default(),
         }
     }
 
-    pub fn from_one(v: &'a T, sql: &'a mut String) -> Self {
-        Self::from(Data::One(v), sql)
+    pub fn from_multiple(v: &'a [T], sql: &'a mut String) -> Self {
+        assert!(sql.is_empty());
+        let mut arguments = DB::arguments();
+        v.iter().for_each(|row| row.arguments(&mut arguments));
+        Self {
+            arguments, rows_count: v.len(), sql,
+            query_builder: Self::create_query_builder(v.len()),
+            _a: Default::default(), _b: Default::default(),
+        }
     }
 
-    pub fn from_multiple(v: &'a [T], sql: &'a mut String) -> Self {
-        Self::from(Data::Multiple(v), sql)
+    fn create_query_builder(rows_count: usize) -> InsertBuilder<'a> {
+        InsertBuilder::from(
+            DB::target(),
+            T::table(),
+            T::columns().into_iter().map(|(_f, c)| c).collect(),
+            rows_count,
+        )
     }
 
     pub fn on_conflict_ignore(mut self) -> Self {
@@ -87,7 +90,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> SetProvider<'a, DB> for Insert<'a, T, DB, A>
-    where T: Cherry<DB>,
+    where T: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 
@@ -102,7 +105,7 @@ impl<'a, T, DB, A> SetProvider<'a, DB> for Insert<'a, T, DB, A>
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> Set<'a, DB> for Insert<'a, T, DB, A>
-    where T: Cherry<DB>,
+    where T: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 
@@ -111,7 +114,7 @@ impl<'a, T, DB, A> Set<'a, DB> for Insert<'a, T, DB, A>
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
-    where T: Cherry<DB>,
+    where T: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 
@@ -134,7 +137,7 @@ impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> Where<'a, DB> for Insert<'a, T, DB, A>
-    where T: Cherry<DB>,
+    where T: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 

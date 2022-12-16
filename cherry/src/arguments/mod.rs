@@ -2,11 +2,11 @@ use sqlx::{Database, Encode, Type};
 use sqlx::database::HasArguments;
 
 #[cfg(feature = "postgres")]
-pub(crate) mod postgres;
+pub mod postgres;
 #[cfg(feature = "mysql")]
-pub(crate) mod mysql;
+pub mod mysql;
 #[cfg(feature = "sqlite")]
-pub(crate) mod sqlite;
+pub mod sqlite;
 // #[cfg(feature = "mssql")]
 // mod mssql;
 
@@ -14,8 +14,6 @@ pub(crate) mod sqlite;
 pub trait Arguments<'a, DB: Database>: Sized + Send {
 
     fn new() -> Self;
-
-    // fn raw(self) -> <DB as HasArguments<'a>>::Arguments;
 
     fn add<T>(&mut self, v: T) where T: Encode<'a, DB> + Type<DB> + Send + 'a;
 

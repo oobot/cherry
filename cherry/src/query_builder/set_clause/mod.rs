@@ -1,5 +1,5 @@
 use crate::query_builder::set_clause::SetSection::*;
-use crate::query_builder::TargetQuery;
+use crate::query_builder::TargetQuery::{self, *};
 
 pub(crate) struct SetClause<'a> {
     target: TargetQuery,
@@ -22,10 +22,8 @@ impl<'a> SetClause<'a> {
                 SetValue(c) => format!("{} = ?", self.target.quote(c)),
                 SetColumn(c) => match self.target {
                     // https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
-                    TargetQuery::MySql =>
-                        format!(r#"{0} = new.{0}"#, self.target.quote(c)),
-                    TargetQuery::Postgres | TargetQuery::Sqlite =>
-                        format!(r#"{0} = excluded.{0}"#, self.target.quote(c)),
+                    MySql => format!(r#"{0} = new.{0}"#, self.target.quote(c)),
+                    Postgres | Sqlite => format!(r#"{0} = excluded.{0}"#, self.target.quote(c)),
                 }
             }
         }).collect::<Vec<String>>().join(", ");

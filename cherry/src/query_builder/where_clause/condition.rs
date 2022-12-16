@@ -92,20 +92,28 @@ impl<'a> Condition<'a> {
             OrIn(c, n) => format!("{} IN ({})", target.quote(c), vec!["?"; *n].join(", ")),
             OrNotIn(c, n) => format!("{} NOT IN ({})", target.quote(c), vec!["?"; *n].join(", ")),
 
-            AndEqColumn(_) => format!(""),
-            OrEqColumn(_) => format!(""),
-            AndGeColumn(_) => format!(""),
-            OrGeColumn(_) => format!(""),
-            AndGtColumn(_) => format!(""),
-            OrGtColumn(_) => format!(""),
-            AndLeColumn(_) => format!(""),
-            OrLeColumn(_) => format!(""),
-            AndLtColumn(_) => format!(""),
-            OrLtColumn(_) => format!(""),
-            AndColumnIsNull(_) => format!(""),
-            AndColumnIsNotNull(_) => format!(""),
-            OrColumnIsNull(_) => format!(""),
-            OrColumnIsNotNull(_) => format!(""),
+            AndEqColumn(c) => format!("{} = {}", self.target_column(target, c), c),
+            OrEqColumn(c) => format!("{} = {}", self.target_column(target, c), c),
+            AndGeColumn(c) => format!("{} >= {}", self.target_column(target, c), c),
+            OrGeColumn(c) => format!("{} >= {}", self.target_column(target, c), c),
+            AndGtColumn(c) => format!("{} > {}", self.target_column(target, c), c),
+            OrGtColumn(c) => format!("{} > {}", self.target_column(target, c), c),
+            AndLeColumn(c) => format!("{} <= {}", self.target_column(target, c), c),
+            OrLeColumn(c) => format!("{} <= {}", self.target_column(target, c), c),
+            AndLtColumn(c) => format!("{} < {}", self.target_column(target, c), c),
+            OrLtColumn(c) => format!("{} < {}", self.target_column(target, c), c),
+            AndColumnIsNull(c) => format!("{} IS NULL", self.target_column(target, c)),
+            AndColumnIsNotNull(c) => format!("{} IS NOT NULL", self.target_column(target, c)),
+            OrColumnIsNull(c) => format!("{} IS NULL", self.target_column(target, c)),
+            OrColumnIsNotNull(c) => format!("{} IS NOT NULL", self.target_column(target, c)),
+        }
+    }
+
+    fn target_column(&self, target: TargetQuery, c: &str) -> String {
+        match target {
+            // https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
+            TargetQuery::MySql => format!(r#"new.{}"#, target.quote(c)),
+            TargetQuery::Postgres | TargetQuery::Sqlite => format!(r#"excluded.{0}"#, target.quote(c)),
         }
     }
 

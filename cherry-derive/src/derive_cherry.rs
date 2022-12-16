@@ -17,9 +17,9 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
     // let dbs = get_databases(&db_values);
     // panic!("{:?}", dbs);
 
-    for db_type in get_databases(&db_values) {
+    for db_name in get_databases(&db_values) {
         let token = quote!(
-            impl cherry::Cherry<[db_type]> for #ident {
+            impl<'a> cherry::Cherry<'a, [db_type], [arguments_type]> for #ident {
                 fn table() -> &'static str {
                     #table
                 }
@@ -27,7 +27,9 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
                     vec![ [fields] ]
                 }
 
-
+                fn arguments(&'a self, arguments: &mut [arguments_type]) {
+                    [arguments]
+                }
 
                 fn from_row(row: &<[db_type] as cherry::sqlx::Database>::Row) -> Result<Self, cherry::Error> {
                     use cherry::sqlx::Row;
@@ -37,14 +39,14 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
         );
         // let new = replace(token.to_string(), db_type, &ast);
         // panic!("{}", new);
-        tokens.push(replace(token.to_string(), db_type, &ast));
+        tokens.push(replace(token.to_string(), db_name, &ast));
     }
 
     TokenStream::from_str(tokens.join("\n").as_str())
         .expect("Parse token stream failed")
 }
 
-fn replace(token: String, db_type: String, ast: &syn::DeriveInput) -> String {
+fn replace(token: String, db_name: String, ast: &syn::DeriveInput) -> String {
     let fields = match &ast.data {
         Data::Struct(ref s) => &s.fields,
         _ => panic!("Cherry only allow impl for struct."),
@@ -67,7 +69,8 @@ fn replace(token: String, db_type: String, ast: &syn::DeriveInput) -> String {
     ).collect::<String>();
 
     token
-        .replace("[db_type]", db_type.as_str())
+        .replace("[db_type]", database_type(&db_name))
+        .replace("[arguments_type]", arguments_type(&db_name))
         .replace("[fields]", fields.as_str())
         .replace("[arguments]", arguments.as_str())
         .replace("[from_row]", from_row.as_str())
@@ -86,15 +89,25 @@ fn get_databases(prop: &str) -> Vec<String> {
         #[cfg(feature = "mssql")] values.push("mssql".into());
     }
 
-    values.into_iter().map(|v| {
-        match v.as_str() {
-            "sqlite" => "cherry::sqlx::Sqlite".to_string(),
-            "mysql" => "cherry::sqlx::MySql".to_string(),
-            "postgres" => "cherry::sqlx::Postgres".to_string(),
-            "mssql" => "cherry::sqlx::Mssql".to_string(),
-            _ => panic!("Unknown database `{}`", v),
-        }
-    }).collect()
+    values
+}
+
+fn database_type(db_name: &str) -> &'static str {
+    match db_name {
+        "sqlite" => "cherry::sqlx::Sqlite",
+        "mysql" => "cherry::sqlx::MySql",
+        "postgres" => "cherry::sqlx::Postgres",
+        _ => panic!("Unknown database `{}`", db_name),
+    }
+}
+
+fn arguments_type(db_name: &str) -> &'static str {
+    match db_name {
+        "sqlite" => "cherry::arguments::sqlite::SqliteArguments<'a>",
+        "mysql" => "cherry::arguments::mysql::MySqlArguments",
+        "postgres" => "cherry::arguments::postgres::PgArguments",
+        _ => panic!("Unknown arguments database `{}`", db_name),
+    }
 }
 
 fn parse_attrs(ast: &syn::DeriveInput) -> HashMap<String, String> {

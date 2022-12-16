@@ -25,7 +25,7 @@ pub struct Select<'a, C, DB, A> {
 }
 
 impl<'a, C, DB, A> Select<'a, C, DB, A>
-    where C: Cherry<DB>,
+    where C: Cherry<'a, DB, A>,
           DB: Database + AboutDatabase<'a, DB, A>,
           A: Arguments<'a, DB> + IntoArguments<'a, DB> + Send + 'a {
 
@@ -35,10 +35,11 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
     /// so the empty sql container created by the caller.
     pub fn new(sql: &'a mut String) -> Self {
         assert!(sql.is_empty());
+
         Self {
             arguments: DB::arguments(),
             sql,
-            query_builder: SelectBuilder::from(DB::target(), <C as Cherry<DB>>::table()),
+            query_builder: SelectBuilder::from(DB::target(), C::table()),
             _a: Default::default(),
             _b: Default::default(),
         }
@@ -61,7 +62,7 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
 }
 
 impl<'a, C, DB, A> WhereProvider<'a, DB> for Select<'a, C, DB, A>
-    where C: Cherry<DB>,
+    where C: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 
@@ -83,7 +84,7 @@ impl<'a, C, DB, A> WhereProvider<'a, DB> for Select<'a, C, DB, A>
 }
 
 impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
-    where C: Cherry<DB>,
+    where C: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 
@@ -97,14 +98,14 @@ impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
 }
 
 impl<'a, C, DB, A> Where<'a, DB> for Select<'a, C, DB, A>
-    where C: Cherry<DB>,
+    where C: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 
 }
 
 impl<'a, C, DB, A> End<'a, DB> for Select<'a, C, DB, A>
-    where C: Cherry<DB>,
+    where C: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
 

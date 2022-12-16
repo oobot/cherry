@@ -16,6 +16,17 @@ name = "derive_test"
 path = "tests/derive_test.rs"
 required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
 
+[[test]]
+name = "insert_test"
+path = "tests/insert_test.rs"
+required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
+
+[[test]]
+name = "select_test"
+path = "tests/select_test.rs"
+required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
+
+
 [dependencies]
 log.workspace = true
 anyhow.workspace = true

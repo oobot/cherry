@@ -1,13 +1,15 @@
-use crate::adapter::{AnyArguments, AnyRow};
 
-pub trait Cherry<DB: crate::sqlx::Database>: Sized + Send + Unpin {
+pub trait Cherry<'a, DB, A>: Sized + Send + Unpin
+    where
+        DB: crate::sqlx::Database,
+        A: crate::arguments::Arguments<'a, DB> {
 
     fn table() -> &'static str;
 
     // field name -> column name
     fn columns() -> Vec<(&'static str, &'static str)>;
 
-    // fn arguments<'a>(&'a self, arguments: &mut AnyArguments<'a>);
+    fn arguments(&'a self, arguments: &mut A) {  }
 
     fn from_row(row: &<DB as sqlx::Database>::Row) -> Result<Self, crate::Error>;
 
@@ -17,15 +19,18 @@ pub trait Cherry<DB: crate::sqlx::Database>: Sized + Send + Unpin {
 #[cfg(test)]
 mod tests {
     use anyhow::Error;
-    use crate::adapter::{AnyArguments, AnyRow};
+
+    use crate::arguments::Arguments;
+    use crate::arguments::sqlite::SqliteArguments;
     use crate::Cherry;
     use crate::sqlx::{Database, Sqlite};
+    use crate::sqlx::database::HasArguments;
 
     struct Example {
         id: u32,
     }
 
-    impl Cherry<crate::sqlx::Sqlite> for Example {
+    impl<'a> Cherry<'a, crate::sqlx::Sqlite, SqliteArguments<'a>> for Example {
         fn table() -> &'static str {
             todo!()
         }
@@ -34,18 +39,9 @@ mod tests {
             todo!()
         }
 
-        // fn arguments<'a>(&'a self, arguments: &mut AnyArguments<'a>) {
-        //     match arguments {
-        //         #[cfg(feature = "postgres")]
-        //         AnyArguments::Postgres(arguments, _) => { arguments;}
-        //         #[cfg(feature = "mysql")]
-        //         AnyArguments::MySql(arguments, _) => { arguments; }
-        //         #[cfg(feature = "sqlite")]
-        //         AnyArguments::Sqlite(arguments) => { arguments; }
-        //         #[cfg(feature = "mssql")]
-        //         AnyArguments::Mssql(arguments, _) => { arguments; }
-        //     }
-        // }
+        fn arguments(&'a self, arguments: &mut SqliteArguments<'a>) {
+            arguments.add(1);
+        }
 
         fn from_row(row: &<Sqlite as Database>::Row) -> Result<Self, Error> {
             todo!()
