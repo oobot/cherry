@@ -5,10 +5,12 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 use crate::{Cherry, Error};
 use crate::arguments::Arguments;
 use crate::database::AboutDatabase;
-use crate::query::provider::WhereProvider;
+use crate::query::provider::{SetProvider, WhereProvider};
 use crate::query::r#where::Where;
+use crate::query::set::Set;
 use crate::query_builder::insert::{Conflict, InsertBuilder};
-use crate::query_builder::r#where::condition::Condition;
+use crate::query_builder::set_clause::SetSection;
+use crate::query_builder::where_clause::condition::Condition;
 
 enum Data<'a, T> {
     One(&'a T),
@@ -74,25 +76,40 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
         self
     }
 
-    pub fn update_columns(mut self, columns: &'a [&'a str]) -> Self {
-        self.query_builder.add_update_columns(columns);
-        self
-    }
-
     pub async fn execute<E>(mut self, e: E) -> Result<DB::QueryResult, Error>
         where E: Executor<'a, Database = DB> {
-        let arguments = DB::arguments();
-        let sql = "";
-
-        Ok(sqlx::query_with(sql, arguments).execute(e).await?)
+        self.sql.push_str(self.query_builder.as_sql().as_str());
+        Ok(sqlx::query_with(self.sql, self.arguments).execute(e).await?)
     }
 
 }
 
-// TODO Wait for Update traits to update other values
-// #[cfg(any(feature = "mysql", feature = "postgres"))]
 
-#[cfg(feature = "postgres")]
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
+impl<'a, T, DB, A> SetProvider<'a, DB> for Insert<'a, T, DB, A>
+    where T: Cherry<DB>,
+          DB: Database,
+          A: Arguments<'a, DB> + Send + 'a {
+
+    fn add_value<V>(&mut self, v: V) where V: Encode<'a, DB> + Type<DB> + Send + 'a {
+        self.arguments.add(v);
+    }
+
+    fn add_set_section(&mut self, section: SetSection<'a>) {
+        self.query_builder.set_clause.add(section);
+    }
+}
+
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
+impl<'a, T, DB, A> Set<'a, DB> for Insert<'a, T, DB, A>
+    where T: Cherry<DB>,
+          DB: Database,
+          A: Arguments<'a, DB> + Send + 'a {
+
+}
+
+
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
     where T: Cherry<DB>,
           DB: Database,
@@ -103,19 +120,19 @@ impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
     }
 
     fn make_wrap(&mut self) {
-        self.query_builder.r#where.make_temp();
+        self.query_builder.where_clause.make_temp();
     }
 
     fn take_wrap(&mut self) -> Vec<Condition<'a>> {
-        self.query_builder.r#where.take_temp()
+        self.query_builder.where_clause.take_temp()
     }
 
-    fn add_statement(&mut self, c: Condition<'a>) {
-        self.query_builder.r#where.add(c);
+    fn add_where_condition(&mut self, c: Condition<'a>) {
+        self.query_builder.where_clause.add(c);
     }
 }
 
-#[cfg(feature = "postgres")]
+#[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> Where<'a, DB> for Insert<'a, T, DB, A>
     where T: Cherry<DB>,
           DB: Database,

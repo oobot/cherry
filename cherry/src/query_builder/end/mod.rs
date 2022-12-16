@@ -3,22 +3,22 @@ use crate::query_builder::TargetQuery;
 
 pub mod section;
 
-pub struct EndStatement<'a> {
-    db: TargetQuery,
+pub struct EndClause<'a> {
+    target: TargetQuery,
     sections: Vec<EndSection<'a>>
 }
 
-impl<'a> EndStatement<'a> {
+impl<'a> EndClause<'a> {
 
     pub fn from(db: TargetQuery) -> Self {
-        Self { db, sections: vec![] }
+        Self { target: db, sections: vec![] }
     }
 
     pub fn add(&mut self, section: EndSection<'a>) {
         self.sections.push(section);
     }
 
-    pub fn as_statement(&self) -> Option<String> {
+    pub fn as_clause(&self) -> Option<String> {
         match self.sections.is_empty() {
             true => None,
             _ => Some(EndSection::gen_all(&self.sections))

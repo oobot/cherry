@@ -1,15 +1,15 @@
 use crate::query_builder::TargetQuery;
-use crate::query_builder::r#where::condition::Condition;
+use crate::query_builder::where_clause::condition::Condition;
 
 pub mod condition;
 
-pub struct WhereStatement<'a> {
+pub struct WhereClause<'a> {
     target: TargetQuery,
     conditions: Vec<Condition<'a>>,
     temp_conditions: Option<Vec<Condition<'a>>>,
 }
 
-impl<'a> WhereStatement<'a> {
+impl<'a> WhereClause<'a> {
 
     pub fn from(target: TargetQuery) -> Self {
         Self {
@@ -34,7 +34,7 @@ impl<'a> WhereStatement<'a> {
         self.temp_conditions.take().unwrap_or_default()
     }
 
-    pub fn as_statement(&self) -> Option<String> {
+    pub fn as_sql(&self) -> Option<String> {
         match self.conditions.is_empty() {
             true => None,
             _ => Some(Condition::gen_all(&self.conditions, self.target))

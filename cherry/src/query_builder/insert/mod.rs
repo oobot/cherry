@@ -1,6 +1,7 @@
 use crate::query_builder::insert::Conflict::*;
-use crate::query_builder::r#where::WhereStatement;
+use crate::query_builder::set_clause::SetClause;
 use crate::query_builder::TargetQuery;
+use crate::query_builder::where_clause::WhereClause;
 
 #[derive(Copy, Clone)]
 pub enum Conflict {
@@ -15,10 +16,9 @@ pub struct InsertBuilder<'a> {
     table: &'a str,
     columns: Vec<&'a str>,
     rows: usize,
-    conflict: Conflict,
-    conflict_columns: Vec<&'a str>,
-    update_columns: Vec<&'a str>,
-    pub(crate) r#where: WhereStatement<'a>,
+    conflict: (Conflict, Vec<&'a str>),
+    pub(crate) set_clause: SetClause<'a>,
+    pub(crate) where_clause: WhereClause<'a>,
 }
 
 impl<'a> InsertBuilder<'a> {
@@ -26,23 +26,18 @@ impl<'a> InsertBuilder<'a> {
     pub fn from(target: TargetQuery, table: &'a str, columns: Vec<&'a str>, rows: usize) -> Self {
         Self {
             target, table, columns, rows,
-            conflict: None,
-            conflict_columns: vec![],
-            update_columns: vec![],
-            r#where: WhereStatement::from(target),
+            conflict: (None, vec![]),
+            set_clause: SetClause::from(target),
+            where_clause: WhereClause::from(target),
         }
     }
 
     pub fn conflict(&mut self, conflict: Conflict) {
-        self.conflict = conflict;
+        self.conflict.0 = conflict;
     }
 
     pub fn add_conflict_columns(&mut self, columns: &'a [&'a str]) {
-        self.conflict_columns.extend(columns);
-    }
-
-    pub fn add_update_columns(&mut self, columns: &'a [&'a str]) {
-        self.update_columns.extend(columns);
+        self.conflict.1.extend(columns);
     }
 
     pub fn as_sql(&self) -> String {
@@ -54,7 +49,7 @@ impl<'a> InsertBuilder<'a> {
     }
 
     fn mysql(&self) -> String {
-        match self.conflict {
+        match self.conflict.0 {
             None => format!(
                 "INSERT INTO {} ({}) VALUES {}",
                 self.table(), self.columns(), self.values_holder(),
@@ -67,15 +62,17 @@ impl<'a> InsertBuilder<'a> {
                 "REPLACE INTO {} ({}) VALUES {}",
                 self.table(), self.columns(), self.values_holder(),
             ),
+            // https://dev.mysql.com/doc/refman/8.0/en/insert-on-duplicate.html
             Update => format!(
-                "INSERT INTO {} ({}) VALUES ({}) ON DUPLICATE KEY UPDATE {}",
-                self.table(), self.columns(), self.values_holder(), self.update_columns(),
+                "INSERT INTO {} ({}) VALUES ({}) AS new ON DUPLICATE KEY UPDATE {}",
+                self.table(), self.columns(), self.values_holder(),
+                self.set_clause.as_clause().unwrap_or_default(),
             ),
         }
     }
 
     fn sqlite(&self) -> String {
-        match self.conflict {
+        match self.conflict.0 {
             None => format!(
                 "INSERT INTO {} ({}) VALUES {}",
                 self.table(), self.columns(), self.values_holder(),
@@ -89,42 +86,44 @@ impl<'a> InsertBuilder<'a> {
                 self.table(), self.columns(), self.values_holder(),
             ),
             Update => format!(
-                "INSERT INTO {} ({}) VALUES {} ON CONFLICT({}) DO UPDATE SET {}",
+                "INSERT INTO {} ({}) VALUES {} ON CONFLICT{} DO UPDATE SET {}{}",
                 self.table(), self.columns(), self.values_holder(),
                 self.conflict_columns(),
-                self.update_columns()
+                self.set_clause.as_clause().unwrap_or_default(),
+                self.where_clause.as_sql().map(|v| format!(" WHERE {}", v)).unwrap_or_default()
             ),
         }
     }
 
     fn postgres(&self) -> String {
-        match self.conflict {
+        match self.conflict.0 {
             None => format!(
                 "INSERT INTO {} ({}) VALUES {}",
                 self.table(), self.columns(), self.values_holder(),
             ),
             Ignore => format!(
-                "INSERT INTO {} ({}) VALUES {} ON CONFLICT({}) DO NOTHING",
+                "INSERT INTO {} ({}) VALUES {} ON CONFLICT{} DO NOTHING",
                 self.table(), self.columns(), self.values_holder(),
                 self.conflict_columns(),
             ),
             Update => format!(
-                "INSERT INTO {} ({}) VALUES {} ON CONFLICT({}) DO UPDATE SET {}",
+                "INSERT INTO {} ({}) VALUES {} ON CONFLICT{} DO UPDATE SET {}{}",
                 self.table(), self.columns(), self.values_holder(),
                 self.conflict_columns(),
-                self.update_columns()
+                self.set_clause.as_clause().unwrap_or_default(),
+                self.where_clause.as_sql().map(|v| format!(" WHERE {}", v)).unwrap_or_default()
             ),
             Replace => unreachable!(),
         }
     }
 
     fn table(&self) -> String {
-        self.target.wrap(self.table)
+        self.target.quote(self.table)
     }
 
     fn columns(&self) -> String {
         self.columns.iter()
-            .map(|v| self.target.wrap(v))
+            .map(|v| self.target.quote(v))
             .collect::<Vec<String>>().join(", ")
     }
 
@@ -141,25 +140,13 @@ impl<'a> InsertBuilder<'a> {
     }
 
     fn conflict_columns(&self) -> String {
-        self.conflict_columns.iter()
-            .map(|c| self.target.wrap(c))
+        let columns = self.conflict.1.iter()
+            .map(|c| self.target.quote(c))
             .collect::<Vec<String>>()
-            .join(", ")
+            .join(", ");
+        format!("({})", columns)
     }
 
-    fn update_columns(&self) -> String {
-        self.update_columns.iter()
-            .map(|v|
-                match self.target {
-                    TargetQuery::MySql =>
-                        format!(r#"{0} = VALUES({0})"#, self.target.wrap(v)),
-                    TargetQuery::Postgres | TargetQuery::Sqlite =>
-                        format!(r#"{0} = EXCLUDED.{0}""#, self.target.wrap(v)),
-                }
-            )
-            .collect::<Vec<String>>()
-            .join(", ")
-    }
 }
 
 #[cfg(test)]
@@ -174,9 +161,15 @@ mod tests {
             vec!["id", "name"],
             1
         );
-        let sql = builder.as_sql();
         let left = r#"INSERT INTO "user" ("id", "name") VALUES (?, ?)"#;
-        println!("{}", sql);
-        assert_eq!(left, sql);
+        assert_eq!(left, builder.as_sql());
+
+        builder.rows = 2;
+        builder.conflict(Update);
+        builder.add_conflict_columns(&["id"]);
+        builder.add_update_columns(&["id", "name"]);
+        let sql = builder.as_sql();
+        let left = r#"INSERT INTO "user" ("id", "name") VALUES (?, ?), (?, ?) ON CONFLICT("id") DO UPDATE SET "id" = excluded."id", "name" = excluded."name""#;
+        assert_eq!(left, builder.as_sql());
     }
 }

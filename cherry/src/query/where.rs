@@ -1,7 +1,7 @@
 use sqlx::{Database, Encode, Type};
 
 use crate::query::provider::WhereProvider;
-use crate::query_builder::r#where::condition::Condition;
+use crate::query_builder::where_clause::condition::Condition;
 
 pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
 
@@ -10,7 +10,7 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
         self.make_wrap();
         f(&mut self); // closure will add to temp conditions
         let conditions = self.take_wrap();
-        self.add_statement(Condition::And(conditions));
+        self.add_where_condition(Condition::And(conditions));
         self
     }
 
@@ -19,7 +19,7 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
         self.make_wrap();
         f(&mut self); // closure will add to temp conditions
         let conditions = self.take_wrap();
-        self.add_statement(Condition::Or(conditions));
+        self.add_where_condition(Condition::Or(conditions));
         self
     }
 
@@ -32,7 +32,7 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
     fn and_eq_ref<V>(&mut self, c: &'a str, v: V) -> &mut Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
-        self.add_statement(Condition::AndEq(c));
+        self.add_where_condition(Condition::AndEq(c));
         self
     }
 
@@ -45,7 +45,7 @@ pub trait Where<'a, DB>: WhereProvider<'a, DB> + Sized where DB: Database {
     fn or_eq_ref<V>(&mut self, c: &'a str, v: V) -> &mut Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
-        self.add_statement(Condition::OrEq(c));
+        self.add_where_condition(Condition::OrEq(c));
         self
     }
 

@@ -10,10 +10,10 @@ use crate::database::AboutDatabase;
 use crate::query::end::End;
 use crate::query::provider::{EndProvider, WhereProvider};
 use crate::query::r#where::Where;
-use crate::query_builder::end::EndStatement;
+use crate::query_builder::end::EndClause;
 use crate::query_builder::end::section::EndSection;
-use crate::query_builder::r#where::condition::Condition;
-use crate::query_builder::r#where::WhereStatement;
+use crate::query_builder::where_clause::condition::Condition;
+use crate::query_builder::where_clause::WhereClause;
 use crate::query_builder::select::SelectBuilder;
 
 pub struct Select<'a, C, DB, A> {
@@ -70,15 +70,15 @@ impl<'a, C, DB, A> WhereProvider<'a, DB> for Select<'a, C, DB, A>
     }
 
     fn make_wrap(&mut self) {
-        self.query_builder.r#where.make_temp();
+        self.query_builder.where_clause.make_temp();
     }
 
     fn take_wrap(&mut self) -> Vec<Condition<'a>> {
-        self.query_builder.r#where.take_temp()
+        self.query_builder.where_clause.take_temp()
     }
 
-    fn add_statement(&mut self, c: Condition<'a>) {
-        self.query_builder.r#where.add(c);
+    fn add_where_condition(&mut self, c: Condition<'a>) {
+        self.query_builder.where_clause.add(c);
     }
 }
 
@@ -91,7 +91,7 @@ impl<'a, C, DB, A> EndProvider<'a, DB> for Select<'a, C, DB, A>
         self.arguments.add(v);
     }
 
-    fn add_section(&mut self, section: EndSection<'a>) {
+    fn add_end_section(&mut self, section: EndSection<'a>) {
         self.query_builder.end.add(section);
     }
 }

@@ -1,6 +1,7 @@
 pub mod select;
 pub mod insert;
-pub mod r#where;
+pub mod where_clause;
+pub mod set_clause;
 pub mod end;
 
 #[derive(Copy, Clone)]
@@ -12,10 +13,10 @@ pub enum TargetQuery {
 
 impl TargetQuery {
 
-    pub(crate) fn wrap(&self, word: &str) -> String {
+    pub(crate) fn quote(&self, s: &str) -> String {
         match self {
-            TargetQuery::MySql => format!("`{}`", word),
-            TargetQuery::Postgres | TargetQuery::Sqlite => format!(r#""{}""#, word),
+            TargetQuery::MySql => format!("`{}`", s),
+            TargetQuery::Postgres | TargetQuery::Sqlite => format!(r#""{}""#, s),
         }
     }
 }

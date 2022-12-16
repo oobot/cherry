@@ -3,3 +3,4 @@ pub mod select;
 pub mod r#where;
 pub mod end;
 mod provider;
+pub mod set;
