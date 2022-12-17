@@ -19,12 +19,12 @@ required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
 [[test]]
 name = "insert_test"
 path = "tests/insert_test.rs"
-required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
+required-features = ["any", "mysql", "sqlite", "json", "runtime-async-std-rustls"]
 
 [[test]]
 name = "select_test"
 path = "tests/select_test.rs"
-required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
+required-features = ["any", "mysql", "sqlite", "json", "runtime-async-std-rustls"]
 
 
 [dependencies]
@@ -38,6 +38,7 @@ serde = { workspace = true, optional = true }
 serde_derive = { workspace = true, optional = true }
 
 [dev-dependencies]
+chrono = { workspace = true, features = ["serde"] }
 async-std = { workspace = true, features = ["attributes"] }
 sqlx = { workspace = true, features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]}
 cherry-derive = { package = "cherry-derive", path = "../cherry-derive", features = ["mysql", "sqlite"] }

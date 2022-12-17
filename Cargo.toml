@@ -20,6 +20,7 @@ sql-builder = "3.1.1"
 sqlx = "0.6.2"
 serde = "1.0.149"
 serde_derive = "1.0.149"
+chrono = "0.4.23"
 
 proc-macro2 = "1.0.47"
 syn = "1.0.105"
