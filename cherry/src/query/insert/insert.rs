@@ -1,16 +1,16 @@
 use std::marker::PhantomData;
 
+use anyhow::Error;
 use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 
-use crate::{Cherry, Error};
 use crate::arguments::Arguments;
+use crate::Cherry;
 use crate::database::AboutDatabase;
-use crate::query::provider::{SetProvider, WhereProvider};
-use crate::query::r#where::Where;
-use crate::query::set::Set;
+use crate::query::insert::insert_set::InsertSet;
+use crate::query::provider::SetProvider;
+use crate::query::set::UpdateSet;
 use crate::query_builder::insert::{Conflict, InsertBuilder};
 use crate::query_builder::set_clause::SetSection;
-use crate::query_builder::where_clause::condition::Condition;
 
 pub struct Insert<'a, T, DB, A> {
     arguments: A,
@@ -88,7 +88,6 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
 }
 
 
-#[cfg(any(feature = "postgres", feature = "sqlite"))]
 impl<'a, T, DB, A> SetProvider<'a, DB> for Insert<'a, T, DB, A>
     where T: Cherry<'a, DB, A>,
           DB: Database,
@@ -103,8 +102,14 @@ impl<'a, T, DB, A> SetProvider<'a, DB> for Insert<'a, T, DB, A>
     }
 }
 
-#[cfg(any(feature = "postgres", feature = "sqlite"))]
-impl<'a, T, DB, A> Set<'a, DB> for Insert<'a, T, DB, A>
+impl<'a, T, DB, A> UpdateSet<'a, DB> for Insert<'a, T, DB, A>
+    where T: Cherry<'a, DB, A>,
+          DB: Database,
+          A: Arguments<'a, DB> + Send + 'a {
+
+}
+
+impl<'a, T, DB, A> InsertSet<'a, DB> for Insert<'a, T, DB, A>
     where T: Cherry<'a, DB, A>,
           DB: Database,
           A: Arguments<'a, DB> + Send + 'a {
@@ -113,32 +118,50 @@ impl<'a, T, DB, A> Set<'a, DB> for Insert<'a, T, DB, A>
 
 
 #[cfg(any(feature = "postgres", feature = "sqlite"))]
-impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
-    where T: Cherry<'a, DB, A>,
-          DB: Database,
-          A: Arguments<'a, DB> + Send + 'a {
+pub mod where_filter {
+    use sqlx::{Database, Encode, Type};
 
-    fn add_value<V>(&mut self, v: V) where V: Encode<'a, DB> + Type<DB> + Send + 'a {
-        self.arguments.add(v);
+    use crate::arguments::Arguments;
+    use crate::Cherry;
+    use crate::query::insert::insert::Insert;
+    use crate::query::insert::insert_where::InsertWhere;
+    use crate::query::provider::WhereProvider;
+    use crate::query::r#where::Where;
+    use crate::query_builder::where_clause::condition::Condition;
+
+    impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
+        where T: Cherry<'a, DB, A>,
+              DB: Database,
+              A: Arguments<'a, DB> + Send + 'a {
+
+        fn add_value<V>(&mut self, v: V) where V: Encode<'a, DB> + Type<DB> + Send + 'a {
+            self.arguments.add(v);
+        }
+
+        fn make_wrap(&mut self) {
+            self.query_builder.where_clause.make_temp();
+        }
+
+        fn take_wrap(&mut self) -> Vec<Condition<'a>> {
+            self.query_builder.where_clause.take_temp()
+        }
+
+        fn add_where_condition(&mut self, c: Condition<'a>) {
+            self.query_builder.where_clause.add(c);
+        }
     }
 
-    fn make_wrap(&mut self) {
-        self.query_builder.where_clause.make_temp();
+    impl<'a, T, DB, A> Where<'a, DB> for Insert<'a, T, DB, A>
+        where T: Cherry<'a, DB, A>,
+              DB: Database,
+              A: Arguments<'a, DB> + Send + 'a {
+
     }
 
-    fn take_wrap(&mut self) -> Vec<Condition<'a>> {
-        self.query_builder.where_clause.take_temp()
+    impl<'a, T, DB, A> InsertWhere<'a, DB> for Insert<'a, T, DB, A>
+        where T: Cherry<'a, DB, A>,
+              DB: Database,
+              A: Arguments<'a, DB> + Send + 'a {
+
     }
-
-    fn add_where_condition(&mut self, c: Condition<'a>) {
-        self.query_builder.where_clause.add(c);
-    }
-}
-
-#[cfg(any(feature = "postgres", feature = "sqlite"))]
-impl<'a, T, DB, A> Where<'a, DB> for Insert<'a, T, DB, A>
-    where T: Cherry<'a, DB, A>,
-          DB: Database,
-          A: Arguments<'a, DB> + Send + 'a {
-
 }

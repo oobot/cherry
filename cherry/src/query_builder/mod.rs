@@ -1,5 +1,6 @@
-pub mod select;
 pub mod insert;
+pub mod update;
+pub mod select;
 pub mod where_clause;
 pub mod set_clause;
 pub mod end;
