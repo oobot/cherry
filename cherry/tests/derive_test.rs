@@ -24,7 +24,7 @@ fn test() {
 #[async_std::test]
 async fn test_select() {
     let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
-    pool.inner.execute(include_str!("migrations.sql")).await.unwrap();
+    pool.execute(include_str!("migrations.sql")).await.unwrap();
     // sqlx::migrate!("migrations.sql").run(&pool).await.unwrap();
     let user = User { id: 100, name: "The user name".to_string(), age: 25, };
 
@@ -34,13 +34,13 @@ async fn test_select() {
     arguments.add(&user.age);
 
     let a = sqlx::query_with("insert into user (id, name, age) values (?, ?, ?)", arguments)
-        .execute(&pool.inner).await.unwrap();
+        .execute(&pool).await.unwrap();
     assert_eq!(1, a.rows_affected());
 
     let user: Option<User> = Select::new(&mut String::new())
         .and_eq("id", user.id)
         .and_eq("name", user.name)
-        .one(&pool.inner).await.unwrap();
+        .one(&pool).await.unwrap();
 
     assert!(user.is_some());
     assert_eq!(100, user.unwrap().id);

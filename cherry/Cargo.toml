@@ -12,51 +12,58 @@ description.workspace =true
 required-features = []
 
 [[test]]
+name = "pool_test"
+path = "tests/pool_test.rs"
+required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
+
+[[test]]
 name = "derive_test"
 path = "tests/derive_test.rs"
-required-features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]
+required-features = ["mysql", "sqlite", "runtime-async-std-rustls"]
 
 [[test]]
 name = "insert_test"
 path = "tests/insert_test.rs"
-required-features = ["any", "mysql", "sqlite", "json", "runtime-async-std-rustls"]
+required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
 
 [[test]]
 name = "select_test"
 path = "tests/select_test.rs"
-required-features = ["any", "mysql", "sqlite", "json", "runtime-async-std-rustls"]
+required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
 
 
 [dependencies]
 log.workspace = true
 anyhow.workspace = true
-async-trait.workspace = true
-once_cell.workspace = true
-sql-builder.workspace = true
+#async-trait.workspace = true
+#once_cell.workspace = true
+#sql-builder.workspace = true
+futures-core.workspace = true
 sqlx.workspace = true
+
 serde = { workspace = true, optional = true }
 serde_derive = { workspace = true, optional = true }
 
 [dev-dependencies]
 chrono = { workspace = true, features = ["serde"] }
 async-std = { workspace = true, features = ["attributes"] }
-sqlx = { workspace = true, features = ["any", "mysql", "sqlite", "runtime-async-std-rustls"]}
+sqlx = { workspace = true, features = ["mysql", "sqlite", "runtime-async-std-rustls"]}
 cherry-derive = { package = "cherry-derive", path = "../cherry-derive", features = ["mysql", "sqlite"] }
 
 
 [features]
-default = ["sqlx/default", "any", "sqlite"]
+default = ["sqlx/default", "sqlite", "mysql"]
 macros = ["sqlx/sqlx-macros"]
 migrate = ["sqlx/migrate"]
 
 all = [ "tls", "all-databases", "all-types", ]
 
-all-databases = ["mysql", "sqlite", "postgres", "mssql", "any",]
+all-databases = ["mysql", "sqlite", "postgres"]
 mysql = ["sqlx/mysql"]
 postgres = ["sqlx/postgres"]
 sqlite = ["sqlx/sqlite"]
-mssql = ["sqlx/mssql"]
-any = ["sqlx/any"]
+#mssql = ["sqlx/mssql"]
+#any = ["sqlx/any"]
 
 all-types = [
     "bigdecimal", "decimal", "json", "time", "chrono",

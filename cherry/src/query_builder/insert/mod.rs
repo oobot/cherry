@@ -151,6 +151,7 @@ impl<'a> InsertBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
+    use crate::query_builder::set_clause::SetSection;
     use super::*;
 
     #[test]
@@ -167,7 +168,8 @@ mod tests {
         builder.rows = 2;
         builder.conflict(Update);
         builder.add_conflict_columns(&["id"]);
-        builder.add_update_columns(&["id", "name"]);
+        builder.set_clause.add(SetSection::SetColumn("id"));
+        builder.set_clause.add(SetSection::SetColumn("name"));
         let sql = builder.as_sql();
         let left = r#"INSERT INTO "user" ("id", "name") VALUES (?, ?), (?, ?) ON CONFLICT("id") DO UPDATE SET "id" = excluded."id", "name" = excluded."name""#;
         assert_eq!(left, builder.as_sql());

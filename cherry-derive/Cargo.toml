@@ -16,7 +16,7 @@ proc-macro = true
 sqlite = []
 mysql = []
 postgres = []
-mssql = []
+#mssql = []
 
 [dependencies]
 proc-macro2.workspace = true
