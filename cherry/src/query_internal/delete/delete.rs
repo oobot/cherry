@@ -6,10 +6,10 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 use crate::arguments::Arguments;
 use crate::Cherry;
 use crate::database::AboutDatabase;
-use crate::query::provider::WhereProvider;
-use crate::query::r#where::Where;
 use crate::query_builder::delete::DeleteBuilder;
 use crate::query_builder::where_clause::condition::Condition;
+use crate::query_internal::provider::WhereProvider;
+use crate::query_internal::r#where::Where;
 
 pub struct Delete<'a, T, DB, A> {
     arguments: A,
@@ -34,7 +34,7 @@ impl<'a, T, DB, A> Delete<'a, T, DB, A>
         }
     }
 
-    pub async fn execute<E>(mut self, e: E) -> Result<DB::QueryResult, Error>
+    pub async fn execute<E>(self, e: E) -> Result<DB::QueryResult, Error>
         where E: Executor<'a, Database = DB> {
         self.sql.push_str(self.query_builder.as_sql().as_str());
         Ok(sqlx::query_with(self.sql, self.arguments).execute(e).await?)

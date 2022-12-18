@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-use std::mem;
 
 use anyhow::Error;
 use sqlx::{Database, Encode, Executor, IntoArguments, Type};
@@ -7,14 +6,12 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 use crate::arguments::Arguments;
 use crate::Cherry;
 use crate::database::AboutDatabase;
-use crate::query::end::End;
-use crate::query::provider::{EndProvider, WhereProvider};
-use crate::query::r#where::Where;
-use crate::query_builder::end::EndClause;
 use crate::query_builder::end::section::EndSection;
-use crate::query_builder::where_clause::condition::Condition;
-use crate::query_builder::where_clause::WhereClause;
 use crate::query_builder::select::SelectBuilder;
+use crate::query_builder::where_clause::condition::Condition;
+use crate::query_internal::end::End;
+use crate::query_internal::provider::{EndProvider, WhereProvider};
+use crate::query_internal::r#where::Where;
 
 pub struct Select<'a, C, DB, A> {
     arguments: A,
@@ -45,7 +42,7 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
         }
     }
 
-    pub async fn one<'e, 'c: 'e, E>(mut self, e: E) -> Result<Option<C>, Error>
+    pub async fn one<'e, 'c: 'e, E>(self, e: E) -> Result<Option<C>, Error>
         where 'a: 'e,
               A: 'e,
               E: Executor<'c, Database = DB> {

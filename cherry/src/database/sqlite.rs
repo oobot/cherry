@@ -1,4 +1,3 @@
-use sqlx::{Encode, Type};
 use sqlx::Sqlite;
 
 use crate::arguments::sqlite::SqliteArguments;

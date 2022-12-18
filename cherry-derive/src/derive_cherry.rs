@@ -103,9 +103,9 @@ fn database_type(db_name: &str) -> &'static str {
 
 fn arguments_type(db_name: &str) -> &'static str {
     match db_name {
-        "sqlite" => "cherry::arguments::sqlite::SqliteArguments<'a>",
-        "mysql" => "cherry::arguments::mysql::MySqlArguments",
-        "postgres" => "cherry::arguments::postgres::PgArguments",
+        "sqlite" => "cherry::sqlite::SqliteArguments<'a>",
+        "mysql" => "cherry::mysql::MySqlArguments",
+        "postgres" => "cherry::postgres::PgArguments",
         _ => panic!("Unknown arguments database `{}`", db_name),
     }
 }

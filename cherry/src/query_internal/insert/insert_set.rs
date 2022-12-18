@@ -1,7 +1,7 @@
 use sqlx::Database;
 
-use crate::query::set::UpdateSet;
 use crate::query_builder::set_clause::SetSection;
+use crate::query_internal::set::UpdateSet;
 
 pub trait InsertSet<'a, DB>: UpdateSet<'a, DB> + Sized where DB: Database {
 

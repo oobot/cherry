@@ -1,7 +1,7 @@
 use sqlx::Database;
 
-use crate::query::r#where::Where;
 use crate::query_builder::where_clause::condition::Condition;
+use crate::query_internal::r#where::Where;
 
 pub trait InsertWhere<'a, DB>: Where<'a, DB> + Sized where DB: Database {
 

@@ -1,10 +1,8 @@
 use sqlx::{Executor, Sqlite};
 
-use cherry::arguments::sqlite::SqliteArguments;
 use cherry::Cherry;
-use cherry::pool::sqlite::SqlitePool;
-use cherry::query::r#where::Where;
-use cherry::query::select::select::Select;
+use cherry::query::{Select, Where};
+use cherry::sqlite::{SqliteArguments, SqlitePool};
 use cherry_derive::Cherry;
 
 #[derive(Cherry)]
@@ -48,7 +46,6 @@ async fn test_select() {
 
 #[async_std::test]
 async fn test_arguments() {
-    // SqlitePool::connect()
     let pool = sqlx::SqlitePool::connect("sqlite::memory:").await.unwrap();
     pool.execute(include_str!("migrations.sql")).await.unwrap();
     // sqlx::migrate!("migrations.sql").run(&pool).await.unwrap();
@@ -57,8 +54,9 @@ async fn test_arguments() {
     let mut arguments = SqliteArguments::new();
     arguments.add(&user.id);
     arguments.add(&user.name);
+    arguments.add(&user.age);
 
-    let a = sqlx::query_with("insert into user (id, name) values (?, ?)", arguments)
+    let a = sqlx::query_with("insert into user (id, name, age) values (?, ?, ?)", arguments)
         .execute(&pool).await.unwrap();
     assert_eq!(1, a.rows_affected());
 }

@@ -9,7 +9,7 @@ pub trait Cherry<'a, DB, A>: Sized + Send + Unpin
     // field name -> column name
     fn columns() -> Vec<(&'static str, &'static str)>;
 
-    fn arguments(&'a self, arguments: &mut A) {  }
+    fn arguments(&'a self, arguments: &mut A);
 
     fn from_row(row: &<DB as sqlx::Database>::Row) -> Result<Self, crate::Error>;
 
@@ -21,7 +21,7 @@ mod tests {
     use anyhow::Error;
 
     use crate::arguments::Arguments;
-    use crate::arguments::sqlite::SqliteArguments;
+    use crate::sqlite::SqliteArguments;
     use crate::Cherry;
     use crate::sqlx::{Database, Sqlite};
     use crate::sqlx::database::HasArguments;

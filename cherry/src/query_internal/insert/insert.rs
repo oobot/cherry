@@ -6,15 +6,14 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 use crate::arguments::Arguments;
 use crate::Cherry;
 use crate::database::AboutDatabase;
-use crate::query::insert::insert_set::InsertSet;
-use crate::query::provider::SetProvider;
-use crate::query::set::UpdateSet;
 use crate::query_builder::insert::{Conflict, InsertBuilder};
 use crate::query_builder::set_clause::SetSection;
+use crate::query_internal::insert::insert_set::InsertSet;
+use crate::query_internal::provider::SetProvider;
+use crate::query_internal::set::UpdateSet;
 
 pub struct Insert<'a, T, DB, A> {
     arguments: A,
-    rows_count: usize,
     sql: &'a mut String,
     query_builder: InsertBuilder<'a>,
     _a: PhantomData<DB>,
@@ -31,7 +30,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
         let mut arguments = DB::arguments();
         v.arguments(&mut arguments);
         Self {
-            arguments, rows_count: 1, sql,
+            arguments, sql,
             query_builder: Self::create_query_builder(1),
             _a: Default::default(), _b: Default::default(),
         }
@@ -42,7 +41,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
         let mut arguments = DB::arguments();
         v.iter().for_each(|row| row.arguments(&mut arguments));
         Self {
-            arguments, rows_count: v.len(), sql,
+            arguments, sql,
             query_builder: Self::create_query_builder(v.len()),
             _a: Default::default(), _b: Default::default(),
         }
@@ -79,7 +78,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
         self
     }
 
-    pub async fn execute<E>(mut self, e: E) -> Result<DB::QueryResult, Error>
+    pub async fn execute<E>(self, e: E) -> Result<DB::QueryResult, Error>
         where E: Executor<'a, Database = DB> {
         self.sql.push_str(self.query_builder.as_sql().as_str());
         Ok(sqlx::query_with(self.sql, self.arguments).execute(e).await?)
@@ -123,11 +122,11 @@ pub mod where_filter {
 
     use crate::arguments::Arguments;
     use crate::Cherry;
-    use crate::query::insert::insert::Insert;
-    use crate::query::insert::insert_where::InsertWhere;
-    use crate::query::provider::WhereProvider;
-    use crate::query::r#where::Where;
     use crate::query_builder::where_clause::condition::Condition;
+    use crate::query_internal::insert::insert::Insert;
+    use crate::query_internal::insert::insert_where::InsertWhere;
+    use crate::query_internal::provider::WhereProvider;
+    use crate::query_internal::r#where::Where;
 
     impl<'a, T, DB, A> WhereProvider<'a, DB> for Insert<'a, T, DB, A>
         where T: Cherry<'a, DB, A>,

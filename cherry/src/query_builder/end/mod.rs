@@ -4,14 +4,14 @@ use crate::query_builder::TargetQuery;
 pub mod section;
 
 pub struct EndClause<'a> {
-    target: TargetQuery,
+    _target: TargetQuery,
     sections: Vec<EndSection<'a>>
 }
 
 impl<'a> EndClause<'a> {
 
     pub fn from(db: TargetQuery) -> Self {
-        Self { target: db, sections: vec![] }
+        Self { _target: db, sections: vec![] }
     }
 
     pub fn add(&mut self, section: EndSection<'a>) {

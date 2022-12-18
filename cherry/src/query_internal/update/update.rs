@@ -6,12 +6,12 @@ use sqlx::{Database, Encode, Executor, IntoArguments, Type};
 use crate::arguments::Arguments;
 use crate::Cherry;
 use crate::database::AboutDatabase;
-use crate::query::provider::{SetProvider, WhereProvider};
-use crate::query::r#where::Where;
-use crate::query::set::UpdateSet;
 use crate::query_builder::set_clause::SetSection;
 use crate::query_builder::update::UpdateBuilder;
 use crate::query_builder::where_clause::condition::Condition;
+use crate::query_internal::provider::{SetProvider, WhereProvider};
+use crate::query_internal::r#where::Where;
+use crate::query_internal::set::UpdateSet;
 
 pub struct Update<'a, T, DB, A> {
     arguments: A,
@@ -36,7 +36,7 @@ impl<'a, T, DB, A> Update<'a, T, DB, A>
         }
     }
 
-    pub async fn execute<E>(mut self, e: E) -> Result<DB::QueryResult, Error>
+    pub async fn execute<E>(self, e: E) -> Result<DB::QueryResult, Error>
         where E: Executor<'a, Database = DB> {
         self.sql.push_str(self.query_builder.as_sql().as_str());
         Ok(sqlx::query_with(self.sql, self.arguments).execute(e).await?)

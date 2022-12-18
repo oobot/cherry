@@ -1,6 +1,5 @@
 use sqlx::{Database, Encode, Type};
 
-use crate::query_builder::end::EndClause;
 use crate::query_builder::end::section::EndSection;
 use crate::query_builder::set_clause::SetSection;
 use crate::query_builder::where_clause::condition::Condition;

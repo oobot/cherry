@@ -1,13 +1,14 @@
+use chrono::NaiveDate;
 use sqlx::{Executor, Row};
 
-use cherry::pool::sqlite::SqlitePool;
-use cherry::query::insert::insert::Insert;
+use cherry::sqlite::SqlitePool;
+use cherry::query::Insert;
 use cherry::sqlx::types::Json;
 use cherry_derive::Cherry;
 
 async fn init() -> SqlitePool {
     let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
-    pool.inner.execute(include_str!("migrations.sql")).await.unwrap();
+    pool.execute(include_str!("migrations.sql")).await.unwrap();
     pool
 }
 
@@ -16,11 +17,11 @@ async fn test_insert_one() {
     let pool = init().await;
     let user = User { id: 100, name: "test_insert_one".into(), age: 25, };
     let r = Insert::from_one(&user, &mut "".into())
-        .execute(&pool.inner).await.unwrap();
+        .execute(&pool).await.unwrap();
     assert_eq!(1, r.rows_affected());
 
     let sql = "select * from user where id = 100";
-    let row = sqlx::query(sql).fetch_one(&pool.inner).await.unwrap();
+    let row = sqlx::query(sql).fetch_one(&pool).await.unwrap();
     let result = User { id: row.get("id"), name: row.get("name"), age: row.get("age"), };
     assert_eq!(&user, &result);
 }
@@ -49,10 +50,11 @@ struct User {
 }
 
 #[derive(Debug, Cherry, Eq, PartialEq)]
+// #[cherry(database = "sqlite")]
 struct Book {
     id: u32,
     name: String,
     authors: Json<Vec<String>>,
     edition: u8,
-    published_date:
+    // published_date: NaiveDate,
 }

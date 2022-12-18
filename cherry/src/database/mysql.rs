@@ -1,4 +1,3 @@
-use sqlx::{Encode, Type};
 use sqlx::MySql;
 
 use crate::arguments::mysql::MySqlArguments;

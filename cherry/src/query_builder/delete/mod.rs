@@ -1,4 +1,3 @@
-use crate::query_builder::set_clause::SetClause;
 use crate::query_builder::TargetQuery;
 use crate::query_builder::where_clause::WhereClause;
 

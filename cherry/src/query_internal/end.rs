@@ -1,7 +1,7 @@
 use sqlx::{Database, Encode, Type};
 
-use crate::query::provider::EndProvider;
 use crate::query_builder::end::section::EndSection;
+use crate::query_internal::provider::EndProvider;
 
 pub trait End<'a, DB>: EndProvider<'a, DB> + Sized where DB: Database {
 
@@ -15,14 +15,14 @@ pub trait End<'a, DB>: EndProvider<'a, DB> + Sized where DB: Database {
         self
     }
 
-    fn limit<V>(mut self, c: &'a str, v: V) -> Self
+    fn limit<V>(mut self, v: V) -> Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
         self.add_end_section(EndSection::Limit());
         self
     }
 
-    fn offset<V>(mut self, c: &'a str, v: V) -> Self
+    fn offset<V>(mut self, v: V) -> Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {
         self.add_value(v);
         self.add_end_section(EndSection::Offset());

@@ -1,7 +1,7 @@
 use sqlx::{Database, Encode, Type};
 
-use crate::query::provider::SetProvider;
 use crate::query_builder::set_clause::SetSection;
+use crate::query_internal::provider::SetProvider;
 
 pub trait UpdateSet<'a, DB>: SetProvider<'a, DB> + Sized where DB: Database {
 
