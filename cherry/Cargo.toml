@@ -52,7 +52,7 @@ cherry-derive = { package = "cherry-derive", path = "../cherry-derive", features
 
 
 [features]
-default = ["sqlx/default", "sqlite", "mysql"]
+default = ["sqlx/default", "all-databases"]
 macros = ["sqlx/sqlx-macros"]
 migrate = ["sqlx/migrate"]
 

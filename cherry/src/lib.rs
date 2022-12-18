@@ -18,5 +18,5 @@ pub mod sqlx {
 }
 
 
-#[cfg(not(any(feature = "mysql", feature = "postgres", feature = "sqlite", feature = "mssql")))]
-compile_error!("one of the features ['mysql', 'postgres', 'sqlite', 'mssql'] must be enabled");
+#[cfg(not(any(feature = "mysql", feature = "postgres", feature = "sqlite")))]
+compile_error!("one of the features ['mysql', 'postgres', 'sqlite'] must be enabled");
