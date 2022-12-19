@@ -2,7 +2,7 @@
 pub trait Cherry<'a, DB, A>: Sized + Send + Unpin
     where
         DB: crate::sqlx::Database,
-        A: crate::arguments::Arguments<'a, DB> {
+        A: crate::Arguments<'a, DB> + 'a {
 
     fn table() -> &'static str;
 

@@ -10,7 +10,7 @@ pub(crate) mod mysql;
 #[cfg(feature = "sqlite")]
 pub(crate) mod sqlite;
 
-pub trait AboutDatabase<'a, DB, ARGS>
+pub trait AboutDatabase<'a, DB, ARGS>: Database
     where
         DB: Database,
         ARGS: Arguments<'a, DB> + Sized + Send {

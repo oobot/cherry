@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use sqlx::{Executor, Row};
+use sqlx::{Executor, Row, Arguments};
 
 use cherry::sqlite::SqlitePool;
 use cherry::query::Insert;
@@ -43,6 +43,7 @@ async fn test_insert_replace() {
 
 
 #[derive(Debug, Cherry, Eq, PartialEq)]
+#[cherry(database = "sqlite")]
 struct User {
     id: u32,
     name: String,
@@ -50,11 +51,16 @@ struct User {
 }
 
 #[derive(Debug, Cherry, Eq, PartialEq)]
-// #[cherry(database = "sqlite")]
+#[cherry(database = "sqlite")]
 struct Book {
     id: u32,
     name: String,
     authors: Json<Vec<String>>,
     edition: u8,
-    // published_date: NaiveDate,
+    published_date: NaiveDate,
+}
+
+#[test]
+fn check_type() {
+
 }

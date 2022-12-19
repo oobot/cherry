@@ -1,12 +1,12 @@
 use std::marker::PhantomData;
 
 use anyhow::Error;
-use sqlx::{Database, Encode, Executor, IntoArguments, Type};
+use sqlx::{Database, Encode, Executor, Type};
 
 use crate::arguments::Arguments;
 use crate::Cherry;
-use crate::database::AboutDatabase;
 use crate::query_builder::delete::DeleteBuilder;
+use crate::query_builder::TargetQuery;
 use crate::query_builder::where_clause::condition::Condition;
 use crate::query_internal::provider::WhereProvider;
 use crate::query_internal::r#where::Where;
@@ -21,15 +21,15 @@ pub struct Delete<'a, T, DB, A> {
 
 impl<'a, T, DB, A> Delete<'a, T, DB, A>
     where T: Cherry<'a, DB, A> + 'a,
-          DB: Database + AboutDatabase<'a, DB, A>,
-          A: Arguments<'a, DB> + IntoArguments<'a, DB> + Send +'a {
+          DB: Database,
+          A: Arguments<'a, DB> + Send +'a {
 
     pub fn from(sql: &'a mut String) -> Self {
         assert!(sql.is_empty());
         Self {
-            arguments: DB::arguments(),
+            arguments: A::new(),
             sql,
-            query_builder: DeleteBuilder::from(DB::target(), T::table()),
+            query_builder: DeleteBuilder::from(TargetQuery::new::<DB>(), T::table()),
             _a: Default::default(), _b: Default::default(),
         }
     }

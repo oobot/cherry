@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 
 use anyhow::Error;
-use sqlx::{Database, Encode, Executor, IntoArguments, Type};
+use sqlx::{Database, Encode, Executor, Type};
 
 use crate::arguments::Arguments;
 use crate::Cherry;
-use crate::database::AboutDatabase;
 use crate::query_builder::end::section::EndSection;
 use crate::query_builder::select::SelectBuilder;
+use crate::query_builder::TargetQuery;
 use crate::query_builder::where_clause::condition::Condition;
 use crate::query_internal::end::End;
 use crate::query_internal::provider::{EndProvider, WhereProvider};
@@ -23,8 +23,8 @@ pub struct Select<'a, C, DB, A> {
 
 impl<'a, C, DB, A> Select<'a, C, DB, A>
     where C: Cherry<'a, DB, A>,
-          DB: Database + AboutDatabase<'a, DB, A>,
-          A: Arguments<'a, DB> + IntoArguments<'a, DB> + Send + 'a {
+          DB: Database,
+          A: Arguments<'a, DB> + Send + 'a {
 
     /// FIXME: Should have a better solution. (a `str` container with lifetime parameter?)
     /// Because of the `Select::new` was called and created outside, the `'a` lifetime assign by the caller.
@@ -32,11 +32,10 @@ impl<'a, C, DB, A> Select<'a, C, DB, A>
     /// so the empty sql container created by the caller.
     pub fn new(sql: &'a mut String) -> Self {
         assert!(sql.is_empty());
-
         Self {
-            arguments: DB::arguments(),
+            arguments: A::new(),
             sql,
-            query_builder: SelectBuilder::from(DB::target(), C::table()),
+            query_builder: SelectBuilder::from(TargetQuery::new::<DB>(), C::table()),
             _a: Default::default(),
             _b: Default::default(),
         }

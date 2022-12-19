@@ -14,9 +14,6 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
     let db_values = attrs.remove("database").unwrap_or_default();
     let mut tokens: Vec<String> = vec![];
 
-    // let dbs = get_databases(&db_values);
-    // panic!("{:?}", dbs);
-
     for db_name in get_databases(&db_values) {
         let token = quote!(
             impl<'a> cherry::Cherry<'a, [db_type], [arguments_type]> for #ident {
@@ -37,16 +34,15 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
                 }
             }
         );
-        // let new = replace(token.to_string(), db_type, &ast);
-        // panic!("{}", new);
-        tokens.push(replace(token.to_string(), db_name, &ast));
+
+        tokens.push(replace(token.to_string(), &db_name, &ast));
     }
 
     TokenStream::from_str(tokens.join("\n").as_str())
         .expect("Parse token stream failed")
 }
 
-fn replace(token: String, db_name: String, ast: &syn::DeriveInput) -> String {
+fn replace(token: String, db_name: &str, ast: &syn::DeriveInput) -> String {
     let fields = match &ast.data {
         Data::Struct(ref s) => &s.fields,
         _ => panic!("Cherry only allow impl for struct."),
@@ -69,8 +65,8 @@ fn replace(token: String, db_name: String, ast: &syn::DeriveInput) -> String {
     ).collect::<String>();
 
     token
-        .replace("[db_type]", database_type(&db_name))
-        .replace("[arguments_type]", arguments_type(&db_name))
+        .replace("[db_type]", database_type(db_name))
+        .replace("[arguments_type]", arguments_type(db_name))
         .replace("[fields]", fields.as_str())
         .replace("[arguments]", arguments.as_str())
         .replace("[from_row]", from_row.as_str())

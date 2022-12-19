@@ -1,4 +1,5 @@
 use sqlx::{Encode, IntoArguments, Sqlite, Type};
+
 use crate::arguments::Arguments;
 use crate::sqlx::database::HasArguments;
 

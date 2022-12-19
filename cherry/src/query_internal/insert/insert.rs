@@ -1,13 +1,13 @@
 use std::marker::PhantomData;
 
 use anyhow::Error;
-use sqlx::{Database, Encode, Executor, IntoArguments, Type};
+use sqlx::{Database, Encode, Executor, Type};
 
 use crate::arguments::Arguments;
 use crate::Cherry;
-use crate::database::AboutDatabase;
 use crate::query_builder::insert::{Conflict, InsertBuilder};
 use crate::query_builder::set_clause::SetSection;
+use crate::query_builder::TargetQuery;
 use crate::query_internal::insert::insert_set::InsertSet;
 use crate::query_internal::provider::SetProvider;
 use crate::query_internal::set::UpdateSet;
@@ -22,12 +22,12 @@ pub struct Insert<'a, T, DB, A> {
 
 impl<'a, T, DB, A> Insert<'a, T, DB, A>
     where T: Cherry<'a, DB, A> + 'a,
-          DB: Database + AboutDatabase<'a, DB, A>,
-          A: Arguments<'a, DB> + IntoArguments<'a, DB> + Send +'a {
+          DB: Database,
+          A: Arguments<'a, DB> + Send +'a {
 
     pub fn from_one(v: &'a T, sql: &'a mut String) -> Self {
         assert!(sql.is_empty());
-        let mut arguments = DB::arguments();
+        let mut arguments = A::new();
         v.arguments(&mut arguments);
         Self {
             arguments, sql,
@@ -38,7 +38,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
 
     pub fn from_multiple(v: &'a [T], sql: &'a mut String) -> Self {
         assert!(sql.is_empty());
-        let mut arguments = DB::arguments();
+        let mut arguments = A::new();
         v.iter().for_each(|row| row.arguments(&mut arguments));
         Self {
             arguments, sql,
@@ -49,7 +49,7 @@ impl<'a, T, DB, A> Insert<'a, T, DB, A>
 
     fn create_query_builder(rows_count: usize) -> InsertBuilder<'a> {
         InsertBuilder::from(
-            DB::target(),
+            TargetQuery::new::<DB>(),
             T::table(),
             T::columns().into_iter().map(|(_f, c)| c).collect(),
             rows_count,
