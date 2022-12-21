@@ -12,16 +12,16 @@ pub struct SelectBuilder<'a> {
 
 impl<'a> SelectBuilder<'a> {
 
-    pub fn from(db: TargetQuery, table: &'a str) -> Self {
+    pub fn from(target: TargetQuery, table: &'a str) -> Self {
         Self {
-            target: db, table,
+            target, table,
             columns: vec![],
-            where_clause: WhereClause::from(db),
-            end: EndClause::from(db),
+            where_clause: WhereClause::from(target),
+            end: EndClause::from(target),
         }
     }
 
-    pub fn sql(&self) -> String {
+    pub fn as_sql(&self) -> String {
         let columns = match self.columns.is_empty() {
             true => "*".to_string(),
             _ => self.columns.iter().map(|v| self.target.quote(v))

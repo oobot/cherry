@@ -16,7 +16,7 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
 
     for db_name in get_databases(&db_values) {
         let token = quote!(
-            impl<'a> cherry::Cherry<'a, [db_type], [arguments_type]> for #ident {
+            impl<'a> cherry::Cherry<'a, [db_type]> for #ident {
                 fn table() -> &'static str {
                     #table
                 }
@@ -24,7 +24,8 @@ pub fn derive(ast: syn::DeriveInput) -> TokenStream {
                     vec![ [fields] ]
                 }
 
-                fn arguments(&'a self, arguments: &mut [arguments_type]) {
+                fn arguments(&'a self, arguments: &mut <[db_type] as cherry::sqlx::database::HasArguments<'a>>::Arguments) {
+                    use cherry::sqlx::Arguments;
                     [arguments]
                 }
 
@@ -66,7 +67,6 @@ fn replace(token: String, db_name: &str, ast: &syn::DeriveInput) -> String {
 
     token
         .replace("[db_type]", database_type(db_name))
-        .replace("[arguments_type]", arguments_type(db_name))
         .replace("[fields]", fields.as_str())
         .replace("[arguments]", arguments.as_str())
         .replace("[from_row]", from_row.as_str())
@@ -94,15 +94,6 @@ fn database_type(db_name: &str) -> &'static str {
         "mysql" => "cherry::sqlx::MySql",
         "postgres" => "cherry::sqlx::Postgres",
         _ => panic!("Unknown database `{}`", db_name),
-    }
-}
-
-fn arguments_type(db_name: &str) -> &'static str {
-    match db_name {
-        "sqlite" => "cherry::sqlite::SqliteArguments<'a>",
-        "mysql" => "cherry::mysql::MySqlArguments",
-        "postgres" => "cherry::postgres::PgArguments",
-        _ => panic!("Unknown arguments database `{}`", db_name),
     }
 }
 

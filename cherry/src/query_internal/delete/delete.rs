@@ -13,7 +13,6 @@ use crate::query_internal::r#where::Where;
 
 pub struct Delete<'a, T, DB, A> {
     arguments: A,
-    sql: &'a mut String,
     query_builder: DeleteBuilder<'a>,
     _a: PhantomData<DB>,
     _b: PhantomData<T>,
@@ -22,22 +21,22 @@ pub struct Delete<'a, T, DB, A> {
 impl<'a, T, DB, A> Delete<'a, T, DB, A>
     where T: Cherry<'a, DB, A> + 'a,
           DB: Database,
-          A: Arguments<'a, DB> + Send +'a {
+          A: Arguments<'a, DB> + Send + 'a {
 
-    pub fn from(sql: &'a mut String) -> Self {
-        assert!(sql.is_empty());
+    pub fn new() -> Self {
+        // assert!(sql.is_empty());
         Self {
             arguments: A::new(),
-            sql,
             query_builder: DeleteBuilder::from(TargetQuery::new::<DB>(), T::table()),
             _a: Default::default(), _b: Default::default(),
         }
     }
 
-    pub async fn execute<E>(self, e: E) -> Result<DB::QueryResult, Error>
-        where E: Executor<'a, Database = DB> {
-        self.sql.push_str(self.query_builder.as_sql().as_str());
-        Ok(sqlx::query_with(self.sql, self.arguments).execute(e).await?)
+    pub async fn execute<'e, E>(mut self, e: E) -> Result<DB::QueryResult, Error>
+        where
+            E: Executor<'e, Database =DB> {
+        // Ok(sqlx::query_with(&self.query_builder.as_sql(), self.arguments).execute(e).await?)
+        todo!()
     }
 
 }

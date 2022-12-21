@@ -1,9 +1,9 @@
 use sqlx::{Database, Encode, Type};
 
 use crate::query_builder::set_clause::SetSection;
-use crate::query_internal::provider::SetProvider;
+use crate::query_internal::provider::UpdateSetProvider;
 
-pub trait UpdateSet<'a, DB>: SetProvider<'a, DB> + Sized where DB: Database {
+pub trait UpdateSet<'a, DB>: UpdateSetProvider<'a, DB> + Sized where DB: Database {
 
     fn set<V>(mut self, c: &'a str, v: V) -> Self
         where V: Encode<'a, DB> + Type<DB> + Send + 'a {

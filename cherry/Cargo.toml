@@ -35,9 +35,6 @@ required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
 [dependencies]
 log.workspace = true
 anyhow.workspace = true
-#async-trait.workspace = true
-#once_cell.workspace = true
-#sql-builder.workspace = true
 futures-core.workspace = true
 sqlx.workspace = true
 

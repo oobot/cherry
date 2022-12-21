@@ -1,4 +1,4 @@
-// #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
+#![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
 
 pub use {
     anyhow::Error,
@@ -10,17 +10,14 @@ pub use {
 
 pub mod query {
     pub use crate::query_internal::{
-        insert::insert::Insert,
-        select::select::Select,
-        update::update::Update,
-        delete::delete::Delete,
-        // provider::{SetProvider, WhereProvider, EndProvider},
+        query::Query,
+        query::QueryExecutor,
         set::UpdateSet,
+        set_column::SetColumn,
         r#where::Where,
+        where_column::WhereColumn,
         end::End,
     };
-
-    // pub(crate) use crate::query_internal::provider::{SetProvider, WhereProvider, EndProvider};
 }
 
 #[cfg(feature = "sqlite")]

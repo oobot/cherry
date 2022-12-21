@@ -1,8 +1,9 @@
 use chrono::NaiveDate;
-use sqlx::{Executor, Row, Arguments};
+use sqlx::{Executor, Row};
 
+use cherry::Cherry;
+use cherry::query::{QueryExecutor, SetColumn};
 use cherry::sqlite::SqlitePool;
-use cherry::query::Insert;
 use cherry::sqlx::types::Json;
 use cherry_derive::Cherry;
 
@@ -16,8 +17,10 @@ async fn init() -> SqlitePool {
 async fn test_insert_one() {
     let pool = init().await;
     let user = User { id: 100, name: "test_insert_one".into(), age: 25, };
-    let r = Insert::from_one(&user, &mut "".into())
-        .execute(&pool).await.unwrap();
+    // let r = SqliteQuery::new_insert(&user)
+    //     .set_column("").execute(&pool).await.unwrap();
+    // let r = Query::new_insert(&user).execute(&pool).await.unwrap();
+    let r = user.insert().execute(&pool).await.unwrap();
     assert_eq!(1, r.rows_affected());
 
     let sql = "select * from user where id = 100";

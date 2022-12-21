@@ -8,14 +8,14 @@ pub trait WhereProvider<'a, DB>: Sized where DB: Database {
 
     fn add_value<V>(&mut self, v: V) where V: Encode<'a, DB> + Type<DB> + Send + 'a;
 
-    fn make_wrap(&mut self);
+    fn add_where(&mut self, c: Condition<'a>);
 
-    fn take_wrap(&mut self) -> Vec<Condition<'a>>;
+    fn surround_where(&mut self);
 
-    fn add_where_condition(&mut self, c: Condition<'a>);
+    fn take_surround(&mut self) -> Vec<Condition<'a>>;
 }
 
-pub trait SetProvider<'a, DB>: Sized where DB: Database {
+pub trait UpdateSetProvider<'a, DB>: Sized where DB: Database {
 
     fn add_value<V>(&mut self, v: V) where V: Encode<'a, DB> + Type<DB> + Send + 'a;
 
