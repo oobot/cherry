@@ -1,4 +1,4 @@
-#![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
+// #![allow(unused_imports, deprecated, unused_must_use, unused_mut, unused_variables, dead_code, unreachable_code)]
 
 pub use {
     anyhow::Error,
@@ -8,12 +8,12 @@ pub use {
     query::Query,
 };
 
+pub mod clause;
 pub(crate) mod cherry;
 pub(crate) mod pool;
 pub(crate) mod query;
 pub(crate) mod executor;
 pub(crate) mod provider;
-pub mod clause;
 pub(crate) mod sql;
 
 #[cfg(feature = "sqlite")]

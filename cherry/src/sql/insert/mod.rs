@@ -36,7 +36,10 @@ impl<'a> InsertBuilder<'a> {
         self.conflict.0 = conflict;
     }
 
-    pub fn add_conflict_columns(&mut self, columns: &'a [&'a str]) {
+    pub fn set_conflict_columns<I>(&mut self, columns: I)
+        where
+            I: IntoIterator<Item = &'a str> {
+        self.conflict.1.clear();
         self.conflict.1.extend(columns);
     }
 
@@ -167,7 +170,7 @@ mod tests {
 
         builder.rows = 2;
         builder.conflict(Update);
-        builder.add_conflict_columns(&["id"]);
+        builder.set_conflict_columns(&["id"]);
         builder.set_clause.add(SetSection::SetColumn("id"));
         builder.set_clause.add(SetSection::SetColumn("name"));
         let sql = builder.as_sql();

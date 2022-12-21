@@ -1,11 +1,11 @@
-use std::any::{Any, type_name, TypeId};
+use std::any::{type_name, TypeId};
 use std::borrow::BorrowMut;
 
 use sqlx::{Database, MySql, Postgres, Sqlite};
 
 use crate::sql::delete::DeleteBuilder;
 use crate::sql::end::section::EndSection;
-use crate::sql::insert::InsertBuilder;
+use crate::sql::insert::{Conflict, InsertBuilder};
 use crate::sql::select::SelectBuilder;
 use crate::sql::set_clause::SetSection;
 use crate::sql::update::UpdateBuilder;
@@ -108,6 +108,21 @@ impl<'a> QueryBuilder<'a> {
             QueryBuilder::Update(_) =>(),
             QueryBuilder::Delete(_) => (),
             QueryBuilder::Select(b) => b.end.add(section),
+        }
+    }
+
+    pub(crate) fn conflict(&mut self, conflict: Conflict) {
+        match self.borrow_mut() {
+            QueryBuilder::Insert(b) => b.conflict(conflict),
+            _ => ()
+        }
+    }
+
+    pub(crate) fn conflict_columns<I>(&mut self, columns: I)
+        where I: IntoIterator<Item = &'a str> {
+        match self.borrow_mut() {
+            QueryBuilder::Insert(b) => b.set_conflict_columns(columns),
+            _ => ()
         }
     }
 

@@ -1,8 +1,6 @@
 use std::marker::PhantomData;
 
-use anyhow::Error;
-use futures_core::future::BoxFuture;
-use sqlx::{Arguments, Database, Encode, Executor, Sqlite, Type};
+use sqlx::{Arguments, Database, Encode, Type};
 use sqlx::database::HasArguments;
 
 use crate::Cherry;
@@ -15,7 +13,7 @@ use crate::provider::{EndProvider, SetValueProvider, WhereProvider};
 use crate::sql::{QueryBuilder, TargetQuery};
 use crate::sql::delete::DeleteBuilder;
 use crate::sql::end::section::EndSection;
-use crate::sql::insert::InsertBuilder;
+use crate::sql::insert::{Conflict, InsertBuilder};
 use crate::sql::select::SelectBuilder;
 use crate::sql::set_clause::SetSection;
 use crate::sql::update::UpdateBuilder;
@@ -89,6 +87,36 @@ impl<'a, T, DB> Query<'a, T, DB>
             ),
             _a: Default::default(),
         }
+    }
+
+    pub fn on_conflict_ignore(mut self) -> Self {
+        self.query_builder.conflict(Conflict::Ignore);
+        self
+    }
+
+    pub fn on_conflict_update(mut self) -> Self {
+        self.query_builder.conflict(Conflict::Update);
+        self
+    }
+
+    #[cfg(any(feature = "sqlite", feature = "mysql"))]
+    pub fn on_conflict_replace(mut self) -> Self {
+        self.query_builder.conflict(Conflict::Replace);
+        self
+    }
+
+    #[cfg(any(feature = "sqlite", feature = "postgres"))]
+    pub fn conflict_column(mut self, column: &'a str) -> Self {
+        self.query_builder.conflict_columns([column]);
+        self
+    }
+
+    #[cfg(any(feature = "sqlite", feature = "postgres"))]
+    pub fn conflict_columns<I>(mut self, columns: I) -> Self
+        where
+            I: IntoIterator<Item = &'a str> {
+        self.query_builder.conflict_columns(columns);
+        self
     }
 
 }
