@@ -1,8 +1,8 @@
 use chrono::NaiveDate;
 use sqlx::{Executor, Row};
 
+use cherry::QueryExecutor;
 use cherry::Cherry;
-use cherry::query::{QueryExecutor, SetColumn};
 use cherry::sqlite::SqlitePool;
 use cherry::sqlx::types::Json;
 use cherry_derive::Cherry;

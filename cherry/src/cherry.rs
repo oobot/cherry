@@ -2,7 +2,7 @@ use crate::query::Query;
 
 pub trait Cherry<'a, DB>: Sized + Send + Unpin
     where
-        DB: sqlx::Database, {
+        DB: sqlx::Database {
 
     fn table() -> &'static str;
 
