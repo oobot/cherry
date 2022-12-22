@@ -47,8 +47,8 @@ pub enum Condition<'a> {
     OrLtColumn(&'a str),
 
     AndColumnIsNull(&'a str),
-    AndColumnIsNotNull(&'a str),
     OrColumnIsNull(&'a str),
+    AndColumnIsNotNull(&'a str),
     OrColumnIsNotNull(&'a str),
 }
 
@@ -103,8 +103,8 @@ impl<'a> Condition<'a> {
             AndLtColumn(c) => format!("{} < {}", self.target_column(target, c), c),
             OrLtColumn(c) => format!("{} < {}", self.target_column(target, c), c),
             AndColumnIsNull(c) => format!("{} IS NULL", self.target_column(target, c)),
-            AndColumnIsNotNull(c) => format!("{} IS NOT NULL", self.target_column(target, c)),
             OrColumnIsNull(c) => format!("{} IS NULL", self.target_column(target, c)),
+            AndColumnIsNotNull(c) => format!("{} IS NOT NULL", self.target_column(target, c)),
             OrColumnIsNotNull(c) => format!("{} IS NOT NULL", self.target_column(target, c)),
         }
     }
