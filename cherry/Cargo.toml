@@ -73,14 +73,14 @@ uuid = ["sqlx/uuid"]
 offline = ["sqlx/offline"]
 tls = ["sqlx/tls"]
 
-runtime-actix = ["sqlx/runtime-actix"]
+#runtime-actix = ["sqlx/runtime-actix"]
 runtime-actix-native-tls = ["sqlx/runtime-actix-native-tls"]
 runtime-actix-rustls = ["sqlx/runtime-actix-rustls"]
 
-runtime-async-std = ["sqlx/runtime-async-std"]
+#runtime-async-std = ["sqlx/runtime-async-std"]
 runtime-async-std-native-tls = ["sqlx/runtime-async-std-native-tls"]
 runtime-async-std-rustls = ["sqlx/runtime-async-std-rustls"]
 
-runtime-tokio = ["sqlx/runtime-tokio"]
+#runtime-tokio = ["sqlx/runtime-tokio"]
 runtime-tokio-native-tls = ["sqlx/runtime-tokio-native-tls"]
 runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]

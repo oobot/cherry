@@ -4,14 +4,14 @@ pub use {
     anyhow::Error,
     cherry::Cherry,
     cherry_derive::Cherry,
-    pool::PoolOptions,
-    query::Query,
     executor::QueryExecutor,
+    query::Query,
+    crate::sqlx::pool::Pool,
+    crate::sqlx::pool::PoolOptions,
 };
 
 pub mod clause;
 pub(crate) mod cherry;
-pub(crate) mod pool;
 pub(crate) mod query;
 pub(crate) mod executor;
 pub(crate) mod provider;
@@ -19,17 +19,17 @@ pub(crate) mod sql;
 
 #[cfg(feature = "sqlite")]
 pub mod sqlite {
-    pub use crate::pool::sqlite::SqlitePool;
+    pub use sqlx::sqlite::{Sqlite, SqlitePool, SqlitePoolOptions};
 }
 
 #[cfg(feature = "postgres")]
 pub mod postgres {
-    pub use crate::pool::postgres::PgPool;
+    pub use sqlx::postgres::{PgPool, PgPoolOptions, Postgres};
 }
 
 #[cfg(feature = "mysql")]
 pub mod mysql {
-    pub use crate::pool::mysql::MySqlPool;
+    pub use sqlx::mysql::{MySql, MySqlPool, MySqlPoolOptions};
 }
 
 pub mod sqlx {
