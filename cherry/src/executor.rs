@@ -18,6 +18,11 @@ pub trait QueryExecutor<'a, T, DB> where T: Cherry<'a, DB>, DB: Database {
             'a: 'e,
             E: Executor<'e, Database = DB> + 'e;
 
+    fn all<'e, E>(self, e: E) -> BoxFuture<'e, Result<Vec<T>, Error>>
+        where
+            'a: 'e,
+            E: Executor<'e, Database = DB> + 'e;
+
 }
 
 
@@ -35,7 +40,7 @@ impl<'a, T> QueryExecutor<'a, T, $db> for Query<'a, T, $db>
             E: Executor<'e, Database=$db> + 'e {
         Box::pin(async move {
             let sql = self.query_builder.as_sql();
-            Ok(sqlx::query_with(sql.as_str(), self.arguments).execute(e).await?)
+            Ok(sqlx::query_with(&sql, self.arguments).execute(e).await?)
         })
     }
 
@@ -45,7 +50,7 @@ impl<'a, T> QueryExecutor<'a, T, $db> for Query<'a, T, $db>
             E: Executor<'e, Database=$db> + 'e {
         Box::pin(async move {
             let sql = self.query_builder.as_sql();
-            let row = sqlx::query_with(sql.as_str(), self.arguments)
+            let row = sqlx::query_with(&sql, self.arguments)
                 .fetch_optional(e).await?;
             let t = match row {
                 Some(row) => Some(T::from_row(&row)?),
@@ -55,8 +60,22 @@ impl<'a, T> QueryExecutor<'a, T, $db> for Query<'a, T, $db>
         })
     }
 
+    fn all<'e, E>(self, e: E) -> BoxFuture<'e, Result<Vec<T>, Error>>
+        where
+            'a: 'e,
+            E: Executor<'e, Database=$db> + 'e {
 
-
+        Box::pin(async move {
+            let sql = self.query_builder.as_sql();
+            let rows = sqlx::query_with(&sql, self.arguments)
+                .fetch_all(e).await?;
+            let mut vec = Vec::with_capacity(rows.len());
+            for row in rows {
+                vec.push(T::from_row(&row)?);
+            }
+            Ok(vec)
+        })
+    }
 
 }
 
@@ -70,8 +89,8 @@ gen_executor!(sqlx::Postgres);
 #[cfg(feature = "mysql")]
 gen_executor!(sqlx::MySql);
 
-
-/*impl<'a, T> QueryExecutor<'a, T, sqlx::Sqlite> for Query<'a, T, sqlx::Sqlite>
+/*
+impl<'a, T> QueryExecutor<'a, T, sqlx::Sqlite> for Query<'a, T, sqlx::Sqlite>
     where
         T: Cherry<'a, sqlx::Sqlite> {
 
@@ -82,7 +101,7 @@ gen_executor!(sqlx::MySql);
             E: Executor<'e, Database=sqlx::Sqlite> + 'e {
         Box::pin(async move {
             let sql = self.query_builder.as_sql();
-            Ok(sqlx::query_with(sql.as_str(), self.arguments).execute(e).await?)
+            Ok(sqlx::query_with(&sql, self.arguments).execute(e).await?)
         })
     }
 
@@ -92,7 +111,7 @@ gen_executor!(sqlx::MySql);
             E: Executor<'e, Database=sqlx::Sqlite> + 'e {
         Box::pin(async move {
             let sql = self.query_builder.as_sql();
-            let row = sqlx::query_with(sql.as_str(), self.arguments)
+            let row = sqlx::query_with(&sql, self.arguments)
                 .fetch_optional(e).await?;
             let t = match row {
                 Some(row) => Some(T::from_row(&row)?),
@@ -102,4 +121,21 @@ gen_executor!(sqlx::MySql);
         })
     }
 
-}*/
+    fn all<'e, E>(self, e: E) -> BoxFuture<'e, Result<Vec<T>, Error>>
+        where
+            'a: 'e,
+            E: Executor<'e, Database=sqlx::Sqlite> + 'e {
+
+        Box::pin(async move {
+            let sql = self.query_builder.as_sql();
+            let rows = sqlx::query_with(&sql, self.arguments)
+                .fetch_all(e).await?;
+            let mut vec = Vec::with_capacity(rows.len());
+            for row in rows {
+                vec.push(T::from_row(&row)?);
+            }
+            Ok(vec)
+        })
+    }
+}
+*/

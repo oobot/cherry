@@ -30,7 +30,7 @@ impl<'a, T, DB> Query<'a, T, DB>
         T: Cherry<'a, DB>,
         DB: Database {
 
-    pub fn new_insert(v: &'a T) -> Self {
+    pub(crate) fn new_insert(v: &'a T) -> Self {
         let mut arguments = <DB as HasArguments<'a>>::Arguments::default();
         v.arguments(&mut arguments);
         Self {
@@ -40,7 +40,7 @@ impl<'a, T, DB> Query<'a, T, DB>
         }
     }
 
-    pub fn new_insert_bulk(v: &'a [T]) -> Self {
+    pub(crate) fn new_insert_bulk(v: &'a [T]) -> Self {
         let mut arguments = <DB as HasArguments<'a>>::Arguments::default();
         v.iter().for_each(|row| row.arguments(&mut arguments));
         Self {
@@ -59,7 +59,7 @@ impl<'a, T, DB> Query<'a, T, DB>
         )
     }
 
-    pub fn new_select() -> Self {
+    pub(crate) fn new_select() -> Self {
         Self {
             arguments: <DB as HasArguments<'a>>::Arguments::default(),
             query_builder: QueryBuilder::Select(
@@ -69,7 +69,7 @@ impl<'a, T, DB> Query<'a, T, DB>
         }
     }
 
-    pub fn new_update() -> Self {
+    pub(crate) fn new_update() -> Self {
         Self {
             arguments: <DB as HasArguments<'a>>::Arguments::default(),
             query_builder: QueryBuilder::Update(
@@ -79,7 +79,7 @@ impl<'a, T, DB> Query<'a, T, DB>
         }
     }
 
-    pub fn new_delete() -> Self {
+    pub(crate) fn new_delete() -> Self {
         Self {
             arguments: <DB as HasArguments<'a>>::Arguments::default(),
             query_builder: QueryBuilder::Delete(
