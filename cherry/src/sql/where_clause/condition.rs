@@ -19,8 +19,8 @@ pub enum Condition<'a> {
     OrLt(&'a str),
 
     AndIsNull(&'a str),
-    AndIsNotNull(&'a str),
     OrIsNull(&'a str),
+    AndIsNotNull(&'a str),
     OrIsNotNull(&'a str),
 
     AndBetween(&'a str),
@@ -80,8 +80,8 @@ impl<'a> Condition<'a> {
             AndLt(c) => format!("{} < ?", target.quote(c)),
             OrLt(c) => format!("{} < ?", target.quote(c)),
             AndIsNull(c) => format!("{} IS NULL", target.quote(c)),
-            AndIsNotNull(c) => format!("{} IS NOT NULL", target.quote(c)),
             OrIsNull(c) => format!("{} IS NULL", target.quote(c)),
+            AndIsNotNull(c) => format!("{} IS NOT NULL", target.quote(c)),
             OrIsNotNull(c) => format!("{} IS NOT NULL", target.quote(c)),
             AndBetween(c) => format!("{} BETWEEN ? AND ?", target.quote(c)),
             OrBetween(c) => format!("{} BETWEEN ? AND ?", target.quote(c)),

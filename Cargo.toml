@@ -1,5 +1,5 @@
 [workspace]
-members = ["cherry-derive", "cherry"]
+members = ["cherry-derive", "cherry", "example"]
 
 [workspace.package]
 version = "0.4.0"
@@ -16,6 +16,7 @@ async-std = "1.12.0"
 futures-core = "0.3.25"
 sqlx = "0.6.2"
 serde = "1.0.149"
+toml = "0.5.10"
 chrono = "0.4.23"
 
 proc-macro2 = "1.0.47"
