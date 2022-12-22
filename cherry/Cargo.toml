@@ -31,7 +31,6 @@ required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
 anyhow.workspace = true
 futures-core.workspace = true
 sqlx.workspace = true
-serde = { workspace = true, optional = true }
 cherry-derive = { version = "0.4.0", path = "../cherry-derive"}
 
 [dev-dependencies]
@@ -65,7 +64,7 @@ bstr = ["sqlx/bstr"]
 chrono = ["sqlx/chrono"]
 git2 = ["sqlx/git2"]
 ipnetwork = ["sqlx/ipnetwork"]
-json = ["sqlx/json", "serde"]
+json = ["sqlx/json"]
 mac_address = ["sqlx/mac_address"]
 time = ["sqlx/time"]
 uuid = ["sqlx/uuid"]
