@@ -6,15 +6,10 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 keywords.workspace = true
-description.workspace =true
+description.workspace = true
 
 [lib]
 required-features = []
-
-[[test]]
-name = "pool_test"
-path = "tests/pool_test.rs"
-required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
 
 [[test]]
 name = "derive_test"
@@ -33,32 +28,29 @@ required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
 
 
 [dependencies]
-log.workspace = true
 anyhow.workspace = true
 futures-core.workspace = true
 sqlx.workspace = true
-
 serde = { workspace = true, optional = true }
-serde_derive = { workspace = true, optional = true }
+cherry-derive = { version = "0.4.0", path = "../cherry-derive"}
 
 [dev-dependencies]
 chrono.workspace = true
 async-std = { workspace = true, features = ["attributes"] }
-sqlx = { workspace = true, features = ["mysql", "sqlite", "runtime-async-std-rustls"]}
-cherry-derive = { package = "cherry-derive", path = "../cherry-derive", features = ["mysql", "sqlite"] }
+sqlx = { workspace = true, features = ["all-databases", "runtime-async-std-rustls"]}
 
 
 [features]
-default = ["sqlx/default", "all-databases"]
+default = ["sqlx/default"]
 macros = ["sqlx/sqlx-macros"]
 migrate = ["sqlx/migrate"]
 
-all = [ "tls", "all-databases", "all-types", ]
+all = ["tls", "all-databases", "all-types"]
 
 all-databases = ["mysql", "sqlite", "postgres"]
-mysql = ["sqlx/mysql"]
-postgres = ["sqlx/postgres"]
-sqlite = ["sqlx/sqlite"]
+mysql = ["sqlx/mysql", "cherry-derive/mysql"]
+postgres = ["sqlx/postgres", "cherry-derive/postgres"]
+sqlite = ["sqlx/sqlite", "cherry-derive/sqlite"]
 #mssql = ["sqlx/mssql"]
 #any = ["sqlx/any"]
 
@@ -73,7 +65,7 @@ bstr = ["sqlx/bstr"]
 chrono = ["sqlx/chrono"]
 git2 = ["sqlx/git2"]
 ipnetwork = ["sqlx/ipnetwork"]
-json = ["sqlx/json", "serde", "serde_derive"]
+json = ["sqlx/json", "serde"]
 mac_address = ["sqlx/mac_address"]
 time = ["sqlx/time"]
 uuid = ["sqlx/uuid"]

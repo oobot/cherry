@@ -3,9 +3,10 @@
 pub use {
     anyhow::Error,
     cherry::Cherry,
-    executor::QueryExecutor,
+    cherry_derive::Cherry,
     pool::PoolOptions,
     query::Query,
+    executor::QueryExecutor,
 };
 
 pub mod clause;
@@ -36,4 +37,4 @@ pub mod sqlx {
 }
 
 #[cfg(not(any(feature = "mysql", feature = "postgres", feature = "sqlite")))]
-compile_error!("one of the features ['mysql', 'postgres', 'sqlite'] must be enabled");
+compile_error!("at least one of the features ['mysql', 'postgres', 'sqlite'] must be enabled");

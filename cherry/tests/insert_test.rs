@@ -1,11 +1,10 @@
 use chrono::NaiveDate;
 use sqlx::{Executor, Row};
 
-use cherry::QueryExecutor;
 use cherry::Cherry;
+use cherry::QueryExecutor;
 use cherry::sqlite::SqlitePool;
 use cherry::sqlx::types::Json;
-use cherry_derive::Cherry;
 
 async fn init() -> SqlitePool {
     let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
@@ -17,9 +16,6 @@ async fn init() -> SqlitePool {
 async fn test_insert_one() {
     let pool = init().await;
     let user = User { id: 100, name: "test_insert_one".into(), age: 25, };
-    // let r = SqliteQuery::new_insert(&user)
-    //     .set_column("").execute(&pool).await.unwrap();
-    // let r = Query::new_insert(&user).execute(&pool).await.unwrap();
     let r = user.insert().execute(&pool).await.unwrap();
     assert_eq!(1, r.rows_affected());
 
@@ -53,7 +49,7 @@ struct User {
     age: u8,
 }
 
-#[derive(Debug, Cherry, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Cherry)]
 #[cherry(database = "sqlite")]
 struct Book {
     id: u32,

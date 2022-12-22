@@ -72,6 +72,7 @@ fn replace(token: String, db_name: &str, ast: &syn::DeriveInput) -> String {
         .replace("[from_row]", from_row.as_str())
 }
 
+#[allow(unused_mut)]
 fn get_databases(prop: &str) -> Vec<String> {
     let mut values = prop.split(',')
         .filter(|v| !v.trim().is_empty())
