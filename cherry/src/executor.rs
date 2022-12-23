@@ -39,7 +39,7 @@ impl<'a, T> QueryExecutor<'a, T, $db> for Query<'a, T, $db>
             'a: 'e,
             E: Executor<'e, Database=$db> + 'e {
         Box::pin(async move {
-            let sql = self.query_builder.as_sql();
+            let sql = self.sql_builder.as_sql();
             Ok(sqlx::query_with(&sql, self.arguments).execute(e).await?)
         })
     }
@@ -49,7 +49,7 @@ impl<'a, T> QueryExecutor<'a, T, $db> for Query<'a, T, $db>
             'a: 'e,
             E: Executor<'e, Database=$db> + 'e {
         Box::pin(async move {
-            let sql = self.query_builder.as_sql();
+            let sql = self.sql_builder.as_sql();
             let row = sqlx::query_with(&sql, self.arguments)
                 .fetch_optional(e).await?;
             let t = match row {
@@ -66,7 +66,7 @@ impl<'a, T> QueryExecutor<'a, T, $db> for Query<'a, T, $db>
             E: Executor<'e, Database=$db> + 'e {
 
         Box::pin(async move {
-            let sql = self.query_builder.as_sql();
+            let sql = self.sql_builder.as_sql();
             let rows = sqlx::query_with(&sql, self.arguments)
                 .fetch_all(e).await?;
             let mut vec = Vec::with_capacity(rows.len());
@@ -100,7 +100,7 @@ impl<'a, T> QueryExecutor<'a, T, sqlx::Sqlite> for Query<'a, T, sqlx::Sqlite>
             'a: 'e,
             E: Executor<'e, Database=sqlx::Sqlite> + 'e {
         Box::pin(async move {
-            let sql = self.query_builder.as_sql();
+            let sql = self.sql_builder.as_sql();
             Ok(sqlx::query_with(&sql, self.arguments).execute(e).await?)
         })
     }
@@ -110,7 +110,7 @@ impl<'a, T> QueryExecutor<'a, T, sqlx::Sqlite> for Query<'a, T, sqlx::Sqlite>
             'a: 'e,
             E: Executor<'e, Database=sqlx::Sqlite> + 'e {
         Box::pin(async move {
-            let sql = self.query_builder.as_sql();
+            let sql = self.sql_builder.as_sql();
             let row = sqlx::query_with(&sql, self.arguments)
                 .fetch_optional(e).await?;
             let t = match row {
@@ -127,7 +127,7 @@ impl<'a, T> QueryExecutor<'a, T, sqlx::Sqlite> for Query<'a, T, sqlx::Sqlite>
             E: Executor<'e, Database=sqlx::Sqlite> + 'e {
 
         Box::pin(async move {
-            let sql = self.query_builder.as_sql();
+            let sql = self.sql_builder.as_sql();
             let rows = sqlx::query_with(&sql, self.arguments)
                 .fetch_all(e).await?;
             let mut vec = Vec::with_capacity(rows.len());

@@ -1,7 +1,7 @@
 use sqlx::Database;
 
 use crate::clause::where_value::Where;
-use crate::sql::where_clause::condition::Condition;
+use crate::sql::where_condition::Condition;
 
 pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
 
@@ -11,7 +11,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_eq_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndEqColumn(c));
+        self.sql_builder().add_where(Condition::AndEqColumn(c));
         self
     }
 
@@ -21,7 +21,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_eq_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrEqColumn(c));
+        self.sql_builder().add_where(Condition::OrEqColumn(c));
         self
     }
 
@@ -31,7 +31,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_ge_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndGeColumn(c));
+        self.sql_builder().add_where(Condition::AndGeColumn(c));
         self
     }
 
@@ -41,7 +41,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_ge_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrGeColumn(c));
+        self.sql_builder().add_where(Condition::OrGeColumn(c));
         self
     }
 
@@ -51,7 +51,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_gt_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndGtColumn(c));
+        self.sql_builder().add_where(Condition::AndGtColumn(c));
         self
     }
 
@@ -61,7 +61,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_gt_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrGtColumn(c));
+        self.sql_builder().add_where(Condition::OrGtColumn(c));
         self
     }
 
@@ -71,7 +71,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_le_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndLeColumn(c));
+        self.sql_builder().add_where(Condition::AndLeColumn(c));
         self
     }
 
@@ -81,7 +81,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_le_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrLeColumn(c));
+        self.sql_builder().add_where(Condition::OrLeColumn(c));
         self
     }
 
@@ -91,7 +91,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_lt_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndLtColumn(c));
+        self.sql_builder().add_where(Condition::AndLtColumn(c));
         self
     }
 
@@ -101,7 +101,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_lt_column_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrLtColumn(c));
+        self.sql_builder().add_where(Condition::OrLtColumn(c));
         self
     }
 
@@ -111,7 +111,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_column_is_null_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndColumnIsNull(c));
+        self.sql_builder().add_where(Condition::AndColumnIsNull(c));
         self
     }
 
@@ -121,7 +121,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_column_is_null_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrColumnIsNull(c));
+        self.sql_builder().add_where(Condition::OrColumnIsNull(c));
         self
     }
 
@@ -132,7 +132,7 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn and_column_is_not_null_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::AndColumnIsNotNull(c));
+        self.sql_builder().add_where(Condition::AndColumnIsNotNull(c));
         self
     }
 
@@ -142,9 +142,8 @@ pub trait WhereColumn<'a, DB>: Where<'a, DB> + Sized where DB: Database {
     }
 
     fn or_column_is_not_null_ref(&mut self, c: &'a str) -> &mut Self {
-        self.add_where(Condition::OrColumnIsNotNull(c));
+        self.sql_builder().add_where(Condition::OrColumnIsNotNull(c));
         self
     }
-
 
 }
