@@ -5,7 +5,7 @@ use crate::sql::end_clause::EndSection;
 
 pub trait End<'a, DB>: Provider<'a, DB> + Sized where DB: Database {
 
-    fn order_by_asc<V>(mut self, c: &'a str) -> Self {
+    fn order_by_asc(mut self, c: &'a str) -> Self {
         self.sql_builder().add_end_section(EndSection::OrderBy(c, true));
         self
     }
