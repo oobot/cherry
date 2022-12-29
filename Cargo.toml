@@ -3,12 +3,12 @@ members = ["cherry-derive", "cherry", "example"]
 
 [workspace.package]
 version = "0.4.0"
-authors = ["bitlabx <hellobug996@gmail.com>"]
+authors = ["oobot <hellobug996@gmail.com>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/bitlabx/cherry"
+repository = "https://github.com/oobot/cherry"
 keywords = ["ORM", "MySQL", "PostgreSQL", "SQLite"]
-description = "An async ORM, support MySQL, PostgreSQL and SQLite."
+description = "A Rust async ORM, support for MySQL, PostgreSQL and SQLite."
 
 [workspace.dependencies]
 anyhow = "1.0.66"

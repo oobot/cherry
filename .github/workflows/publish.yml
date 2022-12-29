@@ -1,0 +1,25 @@
+name: Publish
+
+on:
+  push:
+    branches: [ "master" ]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Publish cherry-derive
+        run: |
+          cd cherry-derive
+          cargo publish --token ${{ secrets.CARGO }}
+          cd ../
+
+      - name: Publish cherry
+        run: |  
+          cd cherry
+          cargo publish --features "all-databases, runtime-async-std-rustls" --token ${{ secrets.CARGO }}
