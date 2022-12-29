@@ -9,17 +9,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  publish:
+  publish-cherry-derive:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Publish cherry-derive
         run: |
           cd cherry-derive
           cargo publish --token ${{ secrets.CARGO }}
-          cd ../
 
-      - name: Publish cherry
-        run: |  
+  publish-cherry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        run: |
           cd cherry
           cargo publish --features "all-databases, runtime-async-std-rustls" --token ${{ secrets.CARGO }}
