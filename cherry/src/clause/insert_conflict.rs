@@ -5,18 +5,18 @@ use crate::sql::InsertOnConflict;
 
 pub trait InsertConflict<'a, DB>: Provider<'a, DB> + Sized where DB: Database {
 
-    fn on_conflict_ignore(mut self) -> Self {
+    fn ignore_on_conflict(mut self) -> Self {
         self.sql_builder().conflict_with(InsertOnConflict::Ignore);
         self
     }
     
-    fn on_conflict_update(mut self) -> Self {
+    fn update_on_conflict(mut self) -> Self {
         self.sql_builder().conflict_with(InsertOnConflict::Update);
         self
     }
     
     #[cfg(any(feature = "sqlite", feature = "mysql"))]
-    fn on_conflict_replace(mut self) -> Self {
+    fn replace_on_conflict(mut self) -> Self {
         self.sql_builder().conflict_with(InsertOnConflict::Replace);
         self
     }

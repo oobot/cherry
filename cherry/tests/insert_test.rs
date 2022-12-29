@@ -2,6 +2,7 @@ use chrono::NaiveDate;
 use sqlx::{Executor, Row};
 
 use cherry::Cherry;
+use cherry::clause::{InsertConflict, UpdateSet};
 use cherry::QueryExecutor;
 use cherry::sqlite::SqlitePool;
 use cherry::sqlx::types::Json;
@@ -32,7 +33,7 @@ async fn test_insert_ignore() {
 
 #[async_std::test]
 async fn test_insert_update() {
-
+    User::insert_bulk(&[]).update_on_conflict().conflict_column("id").set_column("name").set_column("age")
 }
 
 #[async_std::test]

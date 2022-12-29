@@ -24,7 +24,7 @@ pub mod sqlite {
 
 #[cfg(feature = "postgres")]
 pub mod postgres {
-    pub use sqlx::postgres::{PgPool, PgPoolOptions, Postgres};
+    pub use sqlx::postgres::{Postgres, PgPool, PgPoolOptions};
 }
 
 #[cfg(feature = "mysql")]
