@@ -19,9 +19,9 @@ impl<'a> EndClause<'a> {
         }
     }
 
-    fn gen_sections(_db: TargetDatabase, sections: &[EndSection]) -> String {
+    fn gen_sections(db: TargetDatabase, sections: &[EndSection]) -> String {
         sections.iter()
-            .map(|v| v.as_statement())
+            .map(|v| v.as_statement(db))
             .collect::<Vec<String>>()
             .join(" ")
     }
@@ -36,11 +36,11 @@ pub enum EndSection<'a> {
 }
 
 impl<'a> EndSection<'a> {
-    pub fn as_statement(&self) -> String {
+    pub fn as_statement(&self, db: TargetDatabase) -> String {
         match &self {
             OrderBy(c, asc) => match *asc {
-                true => format!("ORDER BY {} ASC", c),
-                false => format!("ORDER BY {} DESC", c),
+                true => format!("ORDER BY {} ASC", db.quote(c)),
+                false => format!("ORDER BY {} DESC", db.quote(c)),
             }
             Limit() => "LIMIT ?".into(),
             Offset() => "OFFSET ?".into(),
