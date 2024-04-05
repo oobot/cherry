@@ -1,5 +1,6 @@
 [workspace]
-members = ["cherry-derive", "cherry", "example"]
+members = ["cherry-sql", "cherry-derive", "cherry", "example"]
+resolver = "2"
 
 [workspace.package]
 version = "0.4.0"
@@ -14,8 +15,8 @@ description = "A Rust async ORM, support for MySQL, PostgreSQL and SQLite."
 anyhow = "1.0.66"
 async-std = "1.12.0"
 futures-core = "0.3.25"
-sqlx = "0.6.2"
-toml = "0.5.10"
+sqlx = "0.7.4"
+toml = "0.8.12"
 chrono = "0.4.23"
 
 proc-macro2 = "1.0.47"

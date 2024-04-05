@@ -14,17 +14,17 @@ required-features = []
 [[test]]
 name = "derive_test"
 path = "tests/derive_test.rs"
-required-features = ["mysql", "sqlite", "runtime-async-std-rustls"]
+required-features = ["mysql", "sqlite", "async-std"]
 
 [[test]]
 name = "insert_test"
 path = "tests/insert_test.rs"
-required-features = ["mysql", "sqlite", "chrono", "json", "runtime-async-std-rustls"]
+required-features = ["mysql", "sqlite", "chrono", "json", "async-std"]
 
 [[test]]
 name = "select_test"
 path = "tests/select_test.rs"
-required-features = ["mysql", "sqlite", "json", "runtime-async-std-rustls"]
+required-features = ["mysql", "sqlite", "json", "async-std"]
 
 
 [dependencies]
@@ -40,46 +40,32 @@ sqlx = { workspace = true, features = ["all-databases", "runtime-async-std-rustl
 
 
 [features]
-default = ["sqlx/default"]
-macros = ["sqlx/sqlx-macros"]
+default = ["macros", "json"] # "migrate",
+#derive = ["sqlx/derive"]
+macros = ["sqlx/macros"]
 migrate = ["sqlx/migrate"]
 
-all = ["tls", "all-databases", "all-types"]
+# async runtime
+async-std = ["sqlx/runtime-async-std"]
+tokio = ["sqlx/runtime-tokio"]
 
-all-databases = ["mysql", "sqlite", "postgres"]
-mysql = ["sqlx/mysql", "cherry-derive/mysql"]
-postgres = ["sqlx/postgres", "cherry-derive/postgres"]
-sqlite = ["sqlx/sqlite", "cherry-derive/sqlite"]
-#mssql = ["sqlx/mssql"]
-#any = ["sqlx/any"]
+# TLS
+native-tls = ["sqlx/tls-native-tls"]
+rustls = ["sqlx/tls-rustls"]
 
-all-types = [
-    "bigdecimal", "decimal", "json", "time", "chrono",
-    "ipnetwork", "mac_address", "uuid", "bit-vec", "bstr", "git2",
-]
-bit-vec = ["sqlx/bit-vec"]
-decimal = ["sqlx/decimal"]
-bigdecimal = ["sqlx/bigdecimal"]
-bstr = ["sqlx/bstr"]
-chrono = ["sqlx/chrono"]
-git2 = ["sqlx/git2"]
-ipnetwork = ["sqlx/ipnetwork"]
+# database
+postgres = ["sqlx/postgres"]
+mysql = ["sqlx/mysql"]
+sqlite = ["sqlx/sqlite"]
+
+# types
 json = ["sqlx/json"]
+bigdecimal = ["sqlx/bigdecimal"]
+bit-vec = ["sqlx/bit-vec"]
+chrono = ["sqlx/chrono"]
+ipnetwork = ["sqlx/ipnetwork"]
 mac_address = ["sqlx/mac_address"]
+rust_decimal = ["sqlx/mac_address"]
 time = ["sqlx/time"]
 uuid = ["sqlx/uuid"]
-
-offline = ["sqlx/offline"]
-tls = ["sqlx/tls"]
-
-#runtime-actix = ["sqlx/runtime-actix"]
-runtime-actix-native-tls = ["sqlx/runtime-actix-native-tls"]
-runtime-actix-rustls = ["sqlx/runtime-actix-rustls"]
-
-#runtime-async-std = ["sqlx/runtime-async-std"]
-runtime-async-std-native-tls = ["sqlx/runtime-async-std-native-tls"]
-runtime-async-std-rustls = ["sqlx/runtime-async-std-rustls"]
-
-#runtime-tokio = ["sqlx/runtime-tokio"]
-runtime-tokio-native-tls = ["sqlx/runtime-tokio-native-tls"]
-runtime-tokio-rustls = ["sqlx/runtime-tokio-rustls"]
+regexp = ["sqlx/regexp"]

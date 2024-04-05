@@ -2,9 +2,9 @@ use cherry::Cherry;
 use cherry::sqlite::SqlitePool;
 use cherry::sqlx::{Arguments, Executor, Sqlite};
 use cherry::sqlx::sqlite::SqliteArguments;
-use cherry_derive::Cherry;
+// use cherry_derive::Cherry;
 
-#[derive(Cherry, sqlx::FromRow)]
+#[derive(Cherry)]
 struct User {
     id: u32,
     name: String,

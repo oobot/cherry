@@ -6,6 +6,6 @@ edition = "2021"
 [dependencies]
 async-std = { workspace = true, features = ["attributes"] }
 toml.workspace = true
-cherry = { package = "cherry", path = "../cherry" }
+cherry = { package = "cherry", features = ["sqlite"], path = "../cherry" }
 
 
